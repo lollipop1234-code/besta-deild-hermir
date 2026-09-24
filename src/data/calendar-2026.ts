@@ -1,0 +1,58 @@
+import type { CalendarBlock } from "@/lib/types";
+
+export const calendar2026: CalendarBlock[] = [
+  {
+    id: "fifa-mar",
+    label: "Landsleikjagluggi",
+    start: "2026-03-23",
+    end: "2026-03-31",
+    kind: "fifa",
+    hard: true,
+    note: "FIFA international match window, allt að 2 landsleikir.",
+  },
+  {
+    id: "fifa-june",
+    label: "Landsleikjagluggi",
+    start: "2026-06-01",
+    end: "2026-06-09",
+    kind: "fifa",
+    hard: true,
+    note: "FIFA international match window, allt að 2 landsleikir.",
+  },
+  {
+    id: "world-cup",
+    label: "HM 2026",
+    start: "2026-06-11",
+    end: "2026-07-19",
+    kind: "info",
+    hard: false,
+    note: "HM er ekki sjálfkrafa lokun á Bestu deildina, en leikmannalosun getur haft áhrif.",
+  },
+  {
+    id: "uefa-qualifying",
+    label: "Evrópu-undankeppnir",
+    start: "2026-07-07",
+    end: "2026-08-27",
+    kind: "uefa",
+    hard: false,
+    note: "UEFA-leikdagar eru bindandi fyrir þau íslensku lið sem taka þátt. Tímabilið er því viðkvæmt fyrir færslum.",
+  },
+  {
+    id: "fifa-autumn",
+    label: "Landsleikjagluggi",
+    start: "2026-09-21",
+    end: "2026-10-06",
+    kind: "fifa",
+    hard: true,
+    note: "16 daga FIFA-gluggi, allt að 4 landsleikir.",
+  },
+  {
+    id: "fifa-nov",
+    label: "Landsleikjagluggi",
+    start: "2026-11-09",
+    end: "2026-11-17",
+    kind: "fifa",
+    hard: true,
+    note: "FIFA international match window, allt að 2 landsleikir.",
+  },
+];
