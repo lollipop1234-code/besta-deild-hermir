@@ -4,6 +4,7 @@ import type { SpringEuropeDate } from "@/data/europe-spring-2027";
 
 export type LoadEventKind = "besta" | "uefa-official" | "uefa-scenario";
 export type LoadCertainty = "scheduled" | "official" | "scenario";
+export type FixtureDateOverrides = Record<string, string>;
 
 export type TeamLoadEvent = {
   id: string;
@@ -13,6 +14,7 @@ export type TeamLoadEvent = {
   label: string;
   detail: string;
   round?: number;
+  fixtureId?: string;
 };
 
 export type RestGap = {
@@ -31,6 +33,10 @@ export type TeamLoadSummary = {
   scenarioRiskCount: number;
   threeInEightCount: number;
 };
+
+export function fixtureKey(roundNumber: number, home: string, away: string) {
+  return `${roundNumber}:${home}:${away}`;
+}
 
 function dayNumber(value: string) {
   return Math.floor(new Date(`${value}T12:00:00Z`).getTime() / 86_400_000);
@@ -86,6 +92,7 @@ export function buildTeamLoadEvents({
   springEuropeDates,
   uefaWindow,
   includeUefaScenario,
+  fixtureDateOverrides = {},
 }: {
   team: Team;
   pairingRounds: PairingRound[];
@@ -95,21 +102,25 @@ export function buildTeamLoadEvents({
   springEuropeDates: SpringEuropeDate[];
   uefaWindow?: CalendarBlock;
   includeUefaScenario: boolean;
+  fixtureDateOverrides?: FixtureDateOverrides;
 }): TeamLoadEvent[] {
   const dateByRound = new Map(roundDates.map((round) => [round.number, round.date]));
   const events: TeamLoadEvent[] = [];
 
   for (const round of pairingRounds) {
-    const date = dateByRound.get(round.number);
-    if (!date || round.pairings.length === 0) continue;
+    const baseDate = dateByRound.get(round.number);
+    if (!baseDate || round.pairings.length === 0) continue;
 
     const pair = round.pairings.find((candidate) => candidate.home === team.id || candidate.away === team.id);
     if (!pair) continue;
 
+    const id = fixtureKey(round.number, pair.home, pair.away);
+    const date = fixtureDateOverrides[id] ?? baseDate;
     const isHome = pair.home === team.id;
     const opponentId = isHome ? pair.away : pair.home;
     events.push({
       id: `besta-${round.number}`,
+      fixtureId: id,
       date,
       kind: "besta",
       certainty: "scheduled",
