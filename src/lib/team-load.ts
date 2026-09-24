@@ -65,8 +65,7 @@ function addDays(value: string, days: number) {
   return date.toISOString().slice(0, 10);
 }
 
-// Haldið fyrir einingapróf og sem einföld fallback-virkni. Raunveruleg 2026
-// UEFA-slot eru notuð í buildTeamLoadEvents.
+// Haldið fyrir einingapróf og sem fallback ef template-gögn vantar fyrir leið.
 export function buildQualifyingScenarioDates(
   team: Team,
   uefaWindow: CalendarBlock | undefined,
@@ -147,8 +146,9 @@ export function buildTeamLoadEvents({
     }
   }
 
-  if (includeUefaScenario && team.europePath !== "none") {
-    for (const slot of uefaTemplateForPath(team.europePath)) {
+  const templateSlots = uefaTemplateForPath(team.europePath);
+  if (includeUefaScenario && templateSlots.length > 0) {
+    for (const slot of templateSlots) {
       events.push({
         id: `uefa-template-${slot.id}`,
         date: slot.projectedDate,
@@ -159,7 +159,6 @@ export function buildTeamLoadEvents({
       });
     }
   } else if (includeUefaScenario && team.europePath !== "none" && uefaWindow) {
-    // Ólíklegt fallback ef template-gögn vantar síðar.
     for (const date of buildQualifyingScenarioDates(team, uefaWindow)) {
       events.push({
         id: `scenario-${date}`,
