@@ -13,11 +13,17 @@ import {
   teamNameMap,
 } from "@/lib/simulator";
 import {
+  buildTeamLoadEvents,
+  summarizeTeamLoad,
+  visibleTeamLoadEvents,
+} from "@/lib/team-load";
+import {
   applyGrassHomePreference,
   grassShoulderWarning,
   kickoffForHomeTeam,
 } from "@/lib/venue-planner";
 import type { EuropePath, FormatPreset, Surface, Team } from "@/lib/types";
+import TeamLoadPanel from "./TeamLoadPanel";
 
 const formatCopy: Record<FormatPreset, { title: string; meta: string }> = {
   "ten-triple": { title: "10 lið · þreföld umferð", meta: "Tilraun · 27 leikir á lið" },
@@ -72,6 +78,7 @@ export default function Playground() {
   const [preferEvening, setPreferEvening] = useState(false);
   const [protectGrass, setProtectGrass] = useState(false);
   const [springEuropeTeamId, setSpringEuropeTeamId] = useState("none");
+  const [loadTeamId, setLoadTeamId] = useState("vikingur");
   const [teams, setTeams] = useState<Team[]>([...teams2026, ...expansionTeams]);
   const [selectedRound, setSelectedRound] = useState(1);
   const [teamsOpen, setTeamsOpen] = useState(false);
@@ -99,6 +106,8 @@ export default function Playground() {
   const grassTeams = activeTeams.filter((team) => team.surface === "grass").length;
   const noLights = activeTeams.filter((team) => team.floodlights === false).length;
   const springEuropeTeam = activeTeams.find((team) => team.id === springEuropeTeamId);
+  const loadTeam = activeTeams.find((team) => team.id === loadTeamId) ?? activeTeams[0];
+  const qualifyingWindow = calendar2027.find((block) => block.id === "uefa-qualifying-2027");
 
   const uefaWindow = roundDate
     ? calendar2027.find((block) => block.kind === "uefa" && inRange(roundDate.date, block.start, block.end))
@@ -125,16 +134,39 @@ export default function Playground() {
       .sort((a, b) => a.distance - b.distance)[0]
     : undefined;
 
+  const loadEvents = useMemo(() => {
+    if (!loadTeam) return [];
+    return buildTeamLoadEvents({
+      team: loadTeam,
+      pairingRounds,
+      roundDates: calendar.rounds,
+      teamNames: names,
+      springEuropeTeamId,
+      springEuropeDates: conferenceSpring2027,
+      uefaWindow: qualifyingWindow,
+      includeUefaScenario: showUefa,
+    });
+  }, [loadTeam, pairingRounds, calendar.rounds, names, springEuropeTeamId, qualifyingWindow, showUefa]);
+
+  const visibleLoadEvents = useMemo(
+    () => visibleTeamLoadEvents(loadEvents, seasonStart, seasonEnd),
+    [loadEvents, seasonStart, seasonEnd],
+  );
+  const loadSummary = useMemo(() => summarizeTeamLoad(visibleLoadEvents), [visibleLoadEvents]);
+  const splitIsUnresolved = pairingRounds.some((item) => item.stage === "split" && item.pairings.length === 0);
+
   function updateTeam(id: string, patch: Partial<Team>) {
     setTeams((current) => current.map((team) => (team.id === id ? { ...team, ...patch } : team)));
   }
 
   function choosePreset(next: FormatPreset) {
     const nextMetrics = formatMetrics(next);
-    const nextIds = new Set(teams.slice(0, nextMetrics.teams).map((team) => team.id));
+    const nextTeams = teams.slice(0, nextMetrics.teams);
+    const nextIds = new Set(nextTeams.map((team) => team.id));
     setPreset(next);
     setSelectedRound(1);
     if (springEuropeTeamId !== "none" && !nextIds.has(springEuropeTeamId)) setSpringEuropeTeamId("none");
+    if (!nextIds.has(loadTeamId)) setLoadTeamId(nextTeams[0]?.id ?? "");
   }
 
   const splitMessage = preset === "ten-split"
@@ -260,6 +292,14 @@ export default function Playground() {
             )}
             <div className="provisional-note"><b>2027/28 UEFA-dagsetningar eru ekki endanlega birtar.</b><span>Sumar- og haustálag er því sviðsmynd þar til UEFA staðfestir leikdagana.</span></div>
           </div>
+
+          <TeamLoadPanel
+            teams={activeTeams}
+            selectedTeamId={loadTeam?.id ?? ""}
+            onSelectTeam={setLoadTeamId}
+            summary={loadSummary}
+            splitIsUnresolved={splitIsUnresolved}
+          />
 
           <div className="panel calendar-panel">
             <div className="panel-title-row"><div><div className="eyebrow">Dagatal 2027</div><h2>Hvar þrengir að?</h2></div><span className="quiet">{calendar.rounds.length}/{metrics.rounds} leikdagar fundnir</span></div>
