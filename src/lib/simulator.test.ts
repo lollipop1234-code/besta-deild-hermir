@@ -36,6 +36,10 @@ function teamGameCounts(rounds: ReturnType<typeof buildPairingRounds>) {
   return { games, home, away };
 }
 
+function dayNumber(value: string) {
+  return Math.floor(new Date(`${value}T12:00:00Z`).getTime() / 86_400_000);
+}
+
 describe("formatMetrics", () => {
   it("keeps the four playground formats internally consistent", () => {
     expect(formatMetrics("ten-triple")).toMatchObject({ teams: 10, gamesPerTeam: 27, totalGames: 135, rounds: 27 });
@@ -84,12 +88,12 @@ describe("round robin generation", () => {
   });
 });
 
-describe("calendar constraints", () => {
+describe("calendar scheduling", () => {
   const fifaWindow: CalendarBlock = {
     id: "fifa-test",
     label: "FIFA",
-    start: "2027-04-17",
-    end: "2027-04-17",
+    start: "2027-06-07",
+    end: "2027-06-15",
     kind: "fifa",
     constraint: "avoid",
     confidence: "official",
@@ -99,24 +103,52 @@ describe("calendar constraints", () => {
   const blackout: CalendarBlock = {
     id: "blackout-test",
     label: "Blackout",
-    start: "2027-04-24",
-    end: "2027-04-24",
+    start: "2027-07-01",
+    end: "2027-07-07",
     kind: "cup",
     constraint: "blackout",
     confidence: "official",
     note: "test",
   };
 
-  it("avoids FIFA windows only when that simulator preference is enabled", () => {
-    const avoided = buildRoundDates("ten-triple", "2027-04-10", "2027-12-31", [fifaWindow], true);
-    const allowed = buildRoundDates("ten-triple", "2027-04-10", "2027-12-31", [fifaWindow], false);
+  it("redistributes every round when the season window is shortened", () => {
+    const normal = buildRoundDates("current-12-split", "2027-04-10", "2027-10-23", [], false);
+    const short = buildRoundDates("current-12-split", "2027-04-10", "2027-09-18", [], false);
 
-    expect(avoided.rounds.some((round) => round.date === "2027-04-17")).toBe(false);
-    expect(allowed.rounds.some((round) => round.date === "2027-04-17")).toBe(true);
+    expect(normal.shortfall).toBe(0);
+    expect(short.shortfall).toBe(0);
+    expect(short.rounds).toHaveLength(27);
+    expect(short.rounds.at(-1)?.date).toBeLessThanOrEqual("2027-09-18");
+    expect(short.rounds[15]?.date).not.toBe(normal.rounds[15]?.date);
+
+    const gaps = short.rounds.slice(1).map((round, index) => (
+      dayNumber(round.date) - dayNumber(short.rounds[index]!.date)
+    ));
+    expect(Math.min(...gaps)).toBeGreaterThanOrEqual(3);
+    expect(gaps.some((gap) => gap < 7)).toBe(true);
   });
 
-  it("always respects an explicit blackout", () => {
-    const result = buildRoundDates("ten-triple", "2027-04-10", "2027-12-31", [blackout], false);
-    expect(result.rounds.some((round) => round.date === "2027-04-24")).toBe(false);
+  it("only reports missing rounds when the requested window is genuinely too short", () => {
+    const result = buildRoundDates("current-12-split", "2027-04-10", "2027-06-01", [], false);
+    expect(result.shortfall).toBeGreaterThan(0);
+    expect(result.rounds.length + result.shortfall).toBe(27);
+  });
+
+  it("avoids FIFA windows when that simulator preference is enabled", () => {
+    const avoided = buildRoundDates("ten-triple", "2027-04-10", "2027-09-30", [fifaWindow], true);
+    expect(avoided.shortfall).toBe(0);
+    expect(avoided.rounds.some((round) => round.date >= fifaWindow.start && round.date <= fifaWindow.end)).toBe(false);
+  });
+
+  it("can use dates inside a FIFA window when avoidance is disabled", () => {
+    const allowed = buildRoundDates("ten-triple", "2027-04-10", "2027-09-01", [fifaWindow], false);
+    expect(allowed.shortfall).toBe(0);
+    expect(allowed.rounds.some((round) => round.date >= fifaWindow.start && round.date <= fifaWindow.end)).toBe(true);
+  });
+
+  it("always respects an explicit blackout while still redistributing", () => {
+    const result = buildRoundDates("ten-triple", "2027-04-10", "2027-09-20", [blackout], false);
+    expect(result.shortfall).toBe(0);
+    expect(result.rounds.some((round) => round.date >= blackout.start && round.date <= blackout.end)).toBe(false);
   });
 });
