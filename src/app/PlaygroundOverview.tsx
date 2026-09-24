@@ -4,28 +4,19 @@ import type { FormatPreset } from "@/lib/types";
 
 import styles from "./PlaygroundOverview.module.css";
 
-type FormatCard = {
-  teamCount: 10 | 12 | 14;
-  title: string;
-  presets: FormatPreset[];
-};
-
-const cards: FormatCard[] = [
-  { teamCount: 10, title: "10 lið", presets: ["ten-triple", "ten-split"] },
-  { teamCount: 12, title: "12 lið", presets: ["current-12-split"] },
-  { teamCount: 14, title: "14 lið", presets: ["double-14"] },
+const options: Array<{ preset: FormatPreset; teams: number; label: string; tag: string }> = [
+  { preset: "ten-triple", teams: 10, label: "Þreföld", tag: "×3" },
+  { preset: "ten-split", teams: 10, label: "5/5 split", tag: "split" },
+  { preset: "current-12-split", teams: 12, label: "Núverandi", tag: "split" },
+  { preset: "double-14", teams: 14, label: "Tvöföld", tag: "×2" },
 ];
 
 const presetLabel: Record<FormatPreset, string> = {
-  "ten-triple": "Þreföld umferð",
-  "ten-split": "5/5 split",
-  "current-12-split": "Núverandi split",
-  "double-14": "Tvöföld umferð",
+  "ten-triple": "10 lið · þreföld umferð",
+  "ten-split": "10 lið · 5/5 split",
+  "current-12-split": "12 lið · núverandi split",
+  "double-14": "14 lið · tvöföld umferð",
 };
-
-function primaryPreset(card: FormatCard, selected: FormatPreset) {
-  return card.presets.includes(selected) ? selected : card.presets[0]!;
-}
 
 function signalLabel(signal: string) {
   if (signal === "league") return "Besta";
@@ -58,67 +49,50 @@ export default function PlaygroundOverview({
   rerunCount: number;
   onRerun: () => void;
 }) {
+  const metrics = formatMetrics(preset);
+
   return (
     <section className={styles.shell}>
-      <div className={styles.topline}>
+      <div className={styles.toolbar}>
         <div>
-          <div className="eyebrow">Fixture playground</div>
-          <h2>Hvernig á deildin að líta út?</h2>
-          <p>Veldu 10, 12 eða 14 lið. Svo sérðu strax hvernig tímabilið fyllist.</p>
+          <div className="eyebrow">Veldu mót</div>
+          <div className={styles.formatTabs}>
+            {options.map((option) => (
+              <button
+                type="button"
+                key={option.preset}
+                className={`${styles.formatTab} ${preset === option.preset ? styles.formatTabActive : ""}`}
+                onClick={() => onPresetChange(option.preset)}
+              >
+                <span className={styles.teamNumber}>{option.teams}</span>
+                <span className={styles.tabText}><b>{option.label}</b><small>{option.tag}</small></span>
+              </button>
+            ))}
+          </div>
         </div>
+
         <button type="button" className={styles.runButton} onClick={onRerun}>
-          <span>{rerunCount === 0 ? "▶" : "↻"}</span>
-          {rerunCount === 0 ? "Keyra mótið" : "Keyra aftur"}
+          <span>↻</span> Keyra aftur
         </button>
       </div>
 
-      <div className={styles.formatGrid}>
-        {cards.map((card) => {
-          const cardPreset = primaryPreset(card, preset);
-          const cardMetrics = formatMetrics(cardPreset);
-          const active = card.presets.includes(preset);
-
-          return (
-            <div className={`${styles.formatCard} ${active ? styles.formatCardActive : ""}`} key={card.teamCount}>
-              <button type="button" className={styles.formatMain} onClick={() => onPresetChange(cardPreset)}>
-                <span className={styles.teamCount}>{card.teamCount}</span>
-                <span className={styles.teamWord}>lið</span>
-                <strong>{presetLabel[cardPreset]}</strong>
-                <small>{cardMetrics.gamesPerTeam} leikir á lið · {cardMetrics.homeRange} heima/úti</small>
-              </button>
-
-              {card.presets.length > 1 && (
-                <div className={styles.variantRow}>
-                  {card.presets.map((option) => (
-                    <button
-                      type="button"
-                      key={option}
-                      className={preset === option ? styles.variantActive : ""}
-                      onClick={() => onPresetChange(option)}
-                    >
-                      {presetLabel[option]}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <div className={styles.cardFacts}>
-                <span><b>{cardMetrics.totalGames}</b> leikir alls</span>
-                <span><b>{cardMetrics.rounds}</b> leikdagagluggar</span>
-              </div>
-            </div>
-          );
-        })}
+      <div className={styles.summaryLine}>
+        <strong>{presetLabel[preset]}</strong>
+        <span>{metrics.gamesPerTeam} leikir / lið</span>
+        <span>{metrics.totalGames} alls</span>
+        <span>{metrics.homeRange} heima / úti</span>
+        <span>{metrics.rounds} gluggar</span>
+        <span className={`${styles.fit} ${shortfall > 0 ? styles.fitBad : ""}`}>
+          {shortfall > 0 ? `Vantar ${shortfall}` : `${foundRounds}/${totalRounds} fundnir`}
+        </span>
       </div>
 
       <div className={styles.heatmapHead}>
         <div>
-          <strong>Tímabilið hjá {selectedTeamName}</strong>
-          <span>Smelltu á viku til að hoppa í umferð.</span>
+          <strong>{selectedTeamName}</strong>
+          <span>Vikur tímabilsins · smelltu á deildarviku til að hoppa í umferð</span>
         </div>
-        <div className={`${styles.fit} ${shortfall > 0 ? styles.fitBad : ""}`}>
-          {shortfall > 0 ? `Vantar ${shortfall} leikdaga` : `${foundRounds}/${totalRounds} leikdagar fundust`}
-        </div>
+        <span className={styles.runCount}>keyrsla {rerunCount}</span>
       </div>
 
       <div className={styles.heatmap}>
@@ -156,7 +130,7 @@ export default function PlaygroundOverview({
         <span><i className={styles.legendUefa} />UEFA</span>
         <span><i className={styles.legendCup} />Bikar</span>
         <span><i className={styles.legendFifa} />FIFA</span>
-        <span><i className={styles.legendTight} />Þröng vika</span>
+        <span><i className={styles.legendTight} />Þröngt</span>
       </div>
     </section>
   );
