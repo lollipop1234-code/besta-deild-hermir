@@ -242,19 +242,6 @@ export default function Playground() {
         <p className="data-note">2027 hermir · FIFA staðfest · UEFA og Mjólkurbikar byggja á merktum 2026 sniðmátum þar til 2027 dagsetningar birtast.</p>
       </section>
 
-      <PlaygroundOverview
-        preset={preset}
-        onPresetChange={choosePreset}
-        weeks={heatmapWeeks}
-        selectedTeamName={loadTeam?.name ?? "valið lið"}
-        onSelectRound={setSelectedRound}
-        shortfall={calendar.shortfall}
-        foundRounds={calendar.rounds.length}
-        totalRounds={metrics.rounds}
-        rerunCount={rerunCount}
-        onRerun={rerun}
-      />
-
       <div className="workspace playground-workspace">
         <aside className="panel controls compact-controls">
           <div className="section-heading"><span className="step">1</span><div><h2>Stilltu sviðsmynd</h2><p>Breyttu bara því sem þú vilt prófa.</p></div></div>
@@ -313,6 +300,19 @@ export default function Playground() {
         </aside>
 
         <section className="results playground-results">
+          <PlaygroundOverview
+            preset={preset}
+            onPresetChange={choosePreset}
+            weeks={heatmapWeeks}
+            selectedTeamName={loadTeam?.name ?? "valið lið"}
+            onSelectRound={setSelectedRound}
+            shortfall={calendar.shortfall}
+            foundRounds={calendar.rounds.length}
+            totalRounds={metrics.rounds}
+            rerunCount={rerunCount}
+            onRerun={rerun}
+          />
+
           <div className="panel fixture-panel fixture-first">
             <div className="panel-title-row fixture-title-row">
               <div><div className="eyebrow">Leikjapróf</div><h2>Umferð {selectedRound}</h2><p className="quiet">{formatCopy[preset].title} · {formatCopy[preset].meta}</p></div>
