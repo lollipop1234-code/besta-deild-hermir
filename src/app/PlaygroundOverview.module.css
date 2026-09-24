@@ -1,6 +1,6 @@
 .shell {
+  padding: 16px 0 20px;
   border-bottom: 1px solid var(--line);
-  padding-bottom: 18px;
 }
 
 .controlsRow {
@@ -11,35 +11,32 @@
 }
 
 .teamChoices {
-  display: inline-flex;
-  gap: 5px;
-  padding: 4px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #f0f1ec;
+  display: flex;
+  gap: 22px;
+  align-items: baseline;
 }
 
 .teamCountButton {
-  min-height: 36px;
-  padding: 0 16px;
+  padding: 0 0 5px;
   border: 0;
-  border-radius: 8px;
+  border-bottom: 2px solid transparent;
   background: transparent;
   cursor: pointer;
-  font-size: 14px;
+  color: var(--muted);
+  font-size: 16px;
   font-weight: 850;
 }
 
-.teamCountButton:hover { background: rgba(255,255,255,.6); }
-.teamCountButton.active { background: #fff; box-shadow: 0 1px 5px rgba(23, 27, 22, .1); color: var(--green); }
+.teamCountButton:hover { color: var(--ink); }
+.teamCountButton.active { color: var(--ink); border-bottom-color: var(--green); }
 
 .variantChoices {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 8px 0 0 5px;
-  color: #a0a49c;
-  font-size: 12px;
+  gap: 9px;
+  margin-top: 8px;
+  color: #aaaDA6;
+  font-size: 11px;
 }
 
 .variantChoices button {
@@ -48,7 +45,7 @@
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 750;
 }
 
@@ -56,81 +53,77 @@
 .variantChoices .variantActive { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 
 .rerunButton {
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fff;
+  padding: 7px 0 4px;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  background: transparent;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 850;
 }
-
-.rerunButton:hover { border-color: #aeb3aa; }
 
 .summaryLine {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 5px 13px;
-  margin-top: 12px;
+  gap: 5px 14px;
+  margin-top: 14px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .summaryLine strong { color: var(--ink); }
-.summaryLine small { margin-left: auto; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
-.fitGood, .fitBad { padding: 4px 7px; border-radius: 999px; font-weight: 800; }
-.fitGood { background: #edf7ef; color: #2d6645; }
-.fitBad { background: #fff0ed; color: #9f3d35; }
+.summaryLine small { margin-left: auto; font-size: 9px; text-transform: uppercase; letter-spacing: .05em; }
+.fitGood, .fitBad { font-weight: 800; }
+.fitGood { color: #2d6645; }
+.fitBad { color: #9f3d35; }
 
 .boardHead {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
-  margin-top: 24px;
+  gap: 24px;
+  margin-top: 25px;
 }
 
-.boardHead h2 { margin: 0; font-size: 22px; }
-.boardHead p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.boardHead h2 { margin: 0; font-size: 21px; letter-spacing: -.025em; }
+.boardHead p { max-width: 690px; margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
 
 .legend {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 6px 12px;
+  gap: 5px 11px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
 }
 
-.legend span { display: inline-flex; align-items: center; gap: 5px; }
-.legend i { width: 8px; height: 8px; border-radius: 50%; }
+.legend span { display: inline-flex; align-items: center; gap: 4px; }
+.legend i { width: 7px; height: 7px; border-radius: 50%; }
 .leagueDot { background: var(--green); }
+.baselineDot { background: #777c73; }
 .uefaDot { background: #d6b12a; }
 .fifaDot { background: #d76c62; }
 .cupDot { background: #6294ca; }
 
 .board {
   margin-top: 12px;
-  padding: 14px 14px 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fafaf7;
+  padding: 8px 0 4px;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid #dfe2da;
   overflow: hidden;
 }
 
 .months {
   position: relative;
-  height: 20px;
+  height: 22px;
   margin-left: 66px;
   color: #777c73;
   font-size: 9px;
   font-weight: 900;
   letter-spacing: .055em;
 }
-
 .months span { position: absolute; top: 0; text-align: left; }
 
 .lane {
@@ -138,55 +131,84 @@
   grid-template-columns: 56px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
-  min-height: 34px;
+  min-height: 38px;
 }
-
 .lane + .lane { border-top: 1px solid #eceee8; }
-.laneLabel { color: var(--muted); font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .045em; }
-.track { position: relative; height: 34px; }
-.monthLine { position: absolute; top: -17px; bottom: -17px; width: 1px; background: #e2e4dd; pointer-events: none; }
+.laneLabel { color: var(--muted); font-size: 9px; font-weight: 850; text-transform: uppercase; letter-spacing: .045em; }
+.track { position: relative; height: 38px; }
+.monthLine { position: absolute; top: -19px; bottom: -19px; width: 1px; background: #eceee8; pointer-events: none; }
 
 .roundButton {
   position: absolute;
-  top: 4px;
+  top: 7px;
   transform: translateX(-50%);
-  min-width: 27px;
-  height: 27px;
-  padding: 0 4px;
-  border: 1px solid #bfc5bc;
-  border-radius: 7px;
-  background: #fff;
-  color: #304137;
+  min-width: 25px;
+  height: 25px;
+  padding: 0 3px;
+  border: 0;
+  border-radius: 3px;
+  background: #e6eee8;
+  color: #254333;
   cursor: pointer;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 900;
   z-index: 2;
 }
+.roundButton:hover { outline: 1px solid var(--green); }
+.roundSelected { background: var(--green); color: #fff; }
 
-.roundButton:hover { border-color: var(--green); transform: translateX(-50%) translateY(-1px); }
-.roundSelected { border-color: var(--green); background: var(--green); color: #fff; box-shadow: 0 3px 10px rgba(23,74,53,.18); }
+.baselineLane { background: #fafaf7; }
+.baselineBar {
+  position: absolute;
+  top: 18px;
+  height: 2px;
+  background: #aeb3aa;
+}
+.baselineMarker {
+  position: absolute;
+  top: 10px;
+  transform: translateX(-50%);
+  padding: 2px 3px;
+  background: #fafaf7;
+  color: #62675f;
+  font-size: 7px;
+  font-weight: 900;
+  white-space: nowrap;
+}
 
 .window {
   position: absolute;
-  top: 10px;
-  height: 14px;
+  top: 14px;
+  height: 10px;
   min-width: 5px;
-  border-radius: 999px;
-  opacity: .9;
+  border-radius: 2px;
+  opacity: .85;
 }
-
 .uefaWindow { background: #e6c755; }
 .fifaWindow { background: #df8278; }
-.cupMarker { position: absolute; top: 8px; width: 8px; height: 18px; transform: translateX(-50%); border-radius: 4px; background: #709bc9; }
+.cupMarker { position: absolute; top: 11px; width: 5px; height: 16px; transform: translateX(-50%); background: #709bc9; }
+
+.compareLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 15px;
+  align-items: baseline;
+  padding-top: 9px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.compareLine b { color: var(--ink); }
+.compareLine a { margin-left: auto; color: var(--muted); font-weight: 800; }
 
 @media (max-width: 760px) {
   .controlsRow, .boardHead { align-items: stretch; flex-direction: column; }
-  .teamChoices { width: 100%; }
-  .teamCountButton { flex: 1; padding-inline: 8px; }
-  .rerunButton { width: 100%; }
+  .teamChoices { justify-content: space-between; gap: 8px; }
+  .teamCountButton { flex: 1; }
+  .rerunButton { align-self: flex-start; }
   .summaryLine small { margin-left: 0; }
   .legend { justify-content: flex-start; }
   .board { overflow-x: auto; }
-  .months, .lane { min-width: 780px; }
+  .months, .lane { min-width: 800px; }
   .months { margin-left: 66px; }
+  .compareLine a { margin-left: 0; }
 }
