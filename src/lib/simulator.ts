@@ -77,10 +77,36 @@ export function buildRoundDates(
   return { rounds: dates, shortfall: Math.max(0, required - dates.length) };
 }
 
+function balancedOrientation(
+  left: string,
+  right: string,
+  indexById: Map<string, number>,
+  teamCount: number,
+): Pairing {
+  let first = left;
+  let second = right;
+  let firstIndex = indexById.get(first)!;
+  let secondIndex = indexById.get(second)!;
+
+  if (firstIndex > secondIndex) {
+    [first, second] = [second, first];
+    [firstIndex, secondIndex] = [secondIndex, firstIndex];
+  }
+
+  const distance = secondIndex - firstIndex;
+  if (distance < teamCount / 2) return { home: first, away: second };
+  if (distance > teamCount / 2) return { home: second, away: first };
+
+  return firstIndex % 2 === 0
+    ? { home: first, away: second }
+    : { home: second, away: first };
+}
+
 export function buildDoubleRoundRobin(teams: Team[]): PairingRound[] {
   if (teams.length < 2 || teams.length % 2 !== 0) return [];
 
   const ids = teams.map((team) => team.id);
+  const indexById = new Map(ids.map((id, index) => [id, index]));
   const fixed = ids[0]!;
   let rotating = ids.slice(1);
   const firstHalf: PairingRound[] = [];
@@ -92,8 +118,7 @@ export function buildDoubleRoundRobin(teams: Team[]): PairingRound[] {
     for (let i = 0; i < order.length / 2; i += 1) {
       const left = order[i]!;
       const right = order[order.length - 1 - i]!;
-      const flip = (round + i) % 2 === 1;
-      pairings.push(flip ? { home: right, away: left } : { home: left, away: right });
+      pairings.push(balancedOrientation(left, right, indexById, ids.length));
     }
 
     firstHalf.push({ number: round + 1, pairings, stage: "regular" });
