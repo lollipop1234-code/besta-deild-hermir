@@ -65,6 +65,95 @@
   color: #715c16;
 }
 
+.repair {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid #bed0c4;
+  border-radius: 13px;
+  background: #f3f8f4;
+}
+
+.repairScenario {
+  border-color: #e1cd78;
+  background: #fff9df;
+}
+
+.repairCopy {
+  min-width: 0;
+}
+
+.repairLabel {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+.repair strong {
+  display: block;
+  font-size: 16px;
+}
+
+.repair p {
+  max-width: 760px;
+  margin: 5px 0 0;
+  color: #555a53;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.repairNumbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.repairNumbers span {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .72);
+  color: #4d544d;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.repairActions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 39px;
+  border-radius: 10px;
+  padding: 0 13px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.primaryButton {
+  border: 1px solid var(--green);
+  background: var(--green);
+  color: white;
+}
+
+.secondaryButton {
+  border: 1px solid #cdd1c9;
+  background: white;
+  color: #4f554e;
+}
+
 .strip {
   display: flex;
   align-items: stretch;
@@ -177,7 +266,8 @@
 }
 
 @media (max-width: 720px) {
-  .head { flex-direction: column; }
+  .head, .repair { flex-direction: column; align-items: stretch; }
   .select { width: 100%; }
   .summary { grid-template-columns: 1fr; }
+  .repairActions { flex-direction: row; flex-wrap: wrap; }
 }
