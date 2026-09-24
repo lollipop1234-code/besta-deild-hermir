@@ -6,6 +6,7 @@ export type Team = {
   venue: string;
   surface: Surface;
   floodlights: boolean | null;
+  europe: boolean;
 };
 
 export type FormatPreset = "current-12-split" | "double-14";
