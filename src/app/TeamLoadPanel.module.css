@@ -1,302 +1,127 @@
-.panel {
-  padding: 25px;
-  border-left: 4px solid var(--green);
+.shell {
+  padding-top: 4px;
 }
 
-.head {
+.topRow {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 18px;
+  gap: 24px;
 }
 
-.head h2 {
-  margin: 4px 0 0;
-  font-size: 28px;
-}
-
-.headControls {
-  display: flex;
-  gap: 9px;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-
-.headControls label {
-  display: grid;
-  gap: 5px;
-}
-
-.headControls label > span {
+.kicker {
   color: var(--muted);
   font-size: 10px;
-  font-weight: 850;
-  letter-spacing: .045em;
+  font-weight: 900;
+  letter-spacing: .06em;
   text-transform: uppercase;
 }
 
-.select {
-  min-width: 150px;
-  min-height: 43px;
+.topRow h2 { margin: 4px 0 4px; font-size: 21px; }
+.topRow p { max-width: 650px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+.selectors { display: flex; gap: 8px; }
+.selectors label { display: grid; gap: 4px; }
+.selectors label span { color: var(--muted); font-size: 9px; font-weight: 850; text-transform: uppercase; letter-spacing: .04em; }
+.selectors select {
+  min-width: 130px;
+  height: 36px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fbfbf9;
-  padding: 0 11px;
-  color: var(--ink);
-  font: inherit;
-}
-
-.summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 9px;
-  margin-top: 20px;
-}
-
-.metric {
-  min-height: 86px;
-  padding: 14px;
-  border-radius: 12px;
-  background: #f7f7f3;
-}
-
-.metric strong {
-  display: block;
-  font-size: 25px;
-  letter-spacing: -.035em;
-}
-
-.metric span {
-  display: block;
-  margin-top: 5px;
-  color: var(--muted);
+  border-radius: 9px;
+  background: #fff;
+  padding: 0 9px;
   font-size: 12px;
-  font-weight: 700;
-  line-height: 1.35;
 }
 
-.metricBad {
-  background: #fff0ed;
-  color: #913b34;
-}
-
-.metricWarn {
-  background: #fff8d9;
-  color: #715c16;
-}
-
-.repair {
+.problemCard {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 18px;
   margin-top: 14px;
-  padding: 16px;
-  border: 1px solid #bed0c4;
-  border-radius: 13px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.problemActive { border-color: #dfc76f; background: #fffbec; }
+.problemClear { background: #f3f7f3; }
+.problemCopy { display: grid; gap: 3px; }
+.problemCopy strong { font-size: 14px; }
+.problemCopy span { color: var(--muted); font-size: 12px; line-height: 1.35; }
+
+.tryButton, .primaryButton {
+  min-height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--green);
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.tryButton { padding: 0 13px; }
+.primaryButton { padding: 0 16px; }
+
+.repairPreview {
+  margin-top: 8px;
+  padding: 14px;
+  border: 1px solid #b9cbbb;
+  border-radius: 12px;
   background: #f3f8f4;
 }
 
-.repairScenario {
-  border-color: #e1cd78;
-  background: #fff9df;
-}
+.moveLine { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+.moveLine span { font-size: 20px; font-weight: 900; letter-spacing: -.03em; }
+.moveLine b { color: var(--muted); }
+.moveLine small { color: var(--muted); font-size: 11px; }
+.gains { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 9px; color: #315e43; font-size: 11px; font-weight: 750; }
+.previewActions { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.textButton { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 11px; font-weight: 750; }
+.basisNote { display: block; margin-top: 9px; color: var(--muted); font-size: 10px; }
 
-.repairCopy {
-  min-width: 0;
-}
-
-.repairLabel {
-  margin-bottom: 6px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: .055em;
-  text-transform: uppercase;
-}
-
-.repair strong {
-  display: block;
-  font-size: 16px;
-}
-
-.repair p {
-  max-width: 760px;
-  margin: 5px 0 0;
-  color: #555a53;
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.repairNumbers {
+.eventLine {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 9px;
-}
-
-.repairNumbers span {
-  padding: 5px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .72);
-  color: #4d544d;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.repairActions {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  flex: 0 0 auto;
-}
-
-.primaryButton,
-.secondaryButton {
-  min-height: 39px;
-  border-radius: 10px;
-  padding: 0 13px;
-  cursor: pointer;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 850;
-}
-
-.primaryButton {
-  border: 1px solid var(--green);
-  background: var(--green);
-  color: white;
-}
-
-.secondaryButton {
-  border: 1px solid #cdd1c9;
-  background: white;
-  color: #4f554e;
-}
-
-.strip {
-  display: flex;
-  align-items: stretch;
-  gap: 7px;
-  margin-top: 18px;
-  padding: 4px 1px 8px;
+  gap: 5px;
+  margin-top: 15px;
+  padding: 10px 0 2px;
   overflow-x: auto;
-  scrollbar-width: thin;
+  border-top: 1px solid #eceee8;
 }
-
-.eventWrap {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex: 0 0 auto;
-}
-
-.gap {
-  min-width: 58px;
-  text-align: center;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 1.25;
-}
-
-.gapBad { color: #a03c34; }
-.gapScenario { color: #806716; }
 
 .event {
-  width: 158px;
-  min-height: 112px;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fbfbf8;
+  flex: 0 0 auto;
+  min-width: 62px;
+  padding: 6px 7px;
+  border-left: 3px solid var(--green);
+  background: #f5f6f2;
 }
+.event b, .event small { display: block; }
+.event b { font-size: 10px; }
+.event small { margin-top: 2px; color: var(--muted); font-size: 8px; font-weight: 800; }
+.uefascenario { border-left-color: #d6b12a; background: #fff8dd; }
+.uefaofficial { border-left-color: #a78313; background: #fff8dd; }
+.cupscenario { border-left-color: #6294ca; background: #eef5fb; }
 
-.eventOfficial {
-  border-color: #d7ba4d;
-  background: #fffdf3;
-}
-
-.eventScenario {
-  border-style: dashed;
-  border-color: #d7ba4d;
-  background: #fff9df;
-}
-
-.eventCup {
-  border-style: dashed;
-  border-color: #8fb0d2;
-  background: #f4f8fd;
-}
-
-.eventTop {
+.footerLine {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 7px;
-}
-
-.date {
-  font-size: 13px;
-  font-weight: 850;
-}
-
-.badge {
-  padding: 3px 6px;
-  border-radius: 999px;
-  background: #edf0e8;
-  color: #4e5349;
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: .035em;
-  text-transform: uppercase;
-}
-
-.badgeUefa { background: #fff0ae; color: #6c5710; }
-.badgeScenario { background: #fff0ae; color: #6c5710; }
-.badgeCup { background: #dfeefa; color: #365e82; }
-
-.event strong {
-  display: block;
-  margin-top: 12px;
-  font-size: 13px;
-  line-height: 1.3;
-}
-
-.event p {
-  margin: 5px 0 0;
+  gap: 12px;
+  margin-top: 8px;
   color: var(--muted);
-  font-size: 11px;
-  line-height: 1.4;
+  font-size: 10px;
 }
+.footerLine button { border: 0; background: transparent; color: var(--ink); cursor: pointer; font-size: 10px; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
 
-.notes {
-  display: flex;
-  gap: 9px 18px;
-  flex-wrap: wrap;
-  align-items: baseline;
-  margin-top: 10px;
-  padding-top: 13px;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.notes b { color: var(--ink); }
-.notes a { color: inherit; }
-
-.empty {
-  margin: 17px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-@media (max-width: 720px) {
-  .head, .repair { flex-direction: column; align-items: stretch; }
-  .headControls { width: 100%; }
-  .headControls label { flex: 1 1 150px; }
-  .select { width: 100%; }
-  .summary { grid-template-columns: 1fr; }
-  .repairActions { flex-direction: row; flex-wrap: wrap; }
+@media (max-width: 760px) {
+  .topRow { flex-direction: column; }
+  .selectors { width: 100%; }
+  .selectors label { flex: 1; }
+  .selectors select { min-width: 0; width: 100%; }
+  .problemCard { align-items: stretch; flex-direction: column; }
+  .tryButton { width: 100%; }
+  .footerLine { align-items: flex-start; flex-direction: column; }
 }
