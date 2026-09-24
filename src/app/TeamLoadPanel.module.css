@@ -15,8 +15,28 @@
   font-size: 28px;
 }
 
+.headControls {
+  display: flex;
+  gap: 9px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.headControls label {
+  display: grid;
+  gap: 5px;
+}
+
+.headControls label > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+
 .select {
-  min-width: 180px;
+  min-width: 150px;
   min-height: 43px;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -203,6 +223,12 @@
   background: #fff9df;
 }
 
+.eventCup {
+  border-style: dashed;
+  border-color: #8fb0d2;
+  background: #f4f8fd;
+}
+
 .eventTop {
   display: flex;
   align-items: center;
@@ -228,6 +254,7 @@
 
 .badgeUefa { background: #fff0ae; color: #6c5710; }
 .badgeScenario { background: #fff0ae; color: #6c5710; }
+.badgeCup { background: #dfeefa; color: #365e82; }
 
 .event strong {
   display: block;
@@ -267,6 +294,8 @@
 
 @media (max-width: 720px) {
   .head, .repair { flex-direction: column; align-items: stretch; }
+  .headControls { width: 100%; }
+  .headControls label { flex: 1 1 150px; }
   .select { width: 100%; }
   .summary { grid-template-columns: 1fr; }
   .repairActions { flex-direction: row; flex-wrap: wrap; }
