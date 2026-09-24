@@ -1,17 +1,20 @@
 .wrap {
-  border-top: 1px solid #dfe2da;
+  padding: 0 18px 14px;
 }
 
 .note {
   display: flex;
   gap: 10px;
   align-items: baseline;
-  padding: 9px 0 11px;
-  color: var(--muted);
-  font-size: 11px;
+  padding: 10px 0 12px;
+  color: #6b7c72;
+  font-size: 10px;
 }
 
-.note strong { color: var(--ink); white-space: nowrap; }
+.note strong {
+  color: #cdd8d0;
+  white-space: nowrap;
+}
 
 .groups {
   display: grid;
@@ -24,24 +27,26 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  padding: 7px 0;
-  border-bottom: 2px solid var(--ink);
-  font-size: 11px;
+  padding: 8px 0;
+  border-bottom: 1px solid #3a4b40;
+  color: #dbe5de;
+  font-size: 10px;
 }
 
-.groupHead span { color: var(--muted); font-size: 10px; }
+.groupHead span { color: #78897f; font-size: 9px; }
 .games { display: grid; }
 .game {
   display: grid;
-  grid-template-columns: 1fr 20px 1fr;
+  grid-template-columns: 1fr 24px 1fr;
   align-items: center;
-  min-height: 42px;
-  border-bottom: 1px solid #e7e9e3;
+  min-height: 48px;
+  border-bottom: 1px solid #243128;
+  color: #cbd7cf;
   font-size: 12px;
 }
 .game strong:first-child { text-align: right; }
 .game strong:last-child { text-align: left; }
-.game span { text-align: center; color: #9a9e95; }
+.game span { text-align: center; color: #526158; }
 
 @media (max-width: 700px) {
   .note { align-items: flex-start; flex-direction: column; gap: 3px; }
