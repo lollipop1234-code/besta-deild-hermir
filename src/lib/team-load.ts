@@ -1,8 +1,8 @@
 import type { CalendarBlock, Round, Team } from "./types";
 import type { PairingRound } from "./simulator";
 import type { SpringEuropeDate } from "@/data/europe-spring-2027";
-import { uefaTemplateForPath } from "@/data/uefa-template-2026";
-import { cupTemplateForDepth, type CupDepth } from "@/data/mjolkurbikar-template-2026";
+import { uefaTemplateForPath } from "../data/uefa-template-2026";
+import { cupTemplateForDepth, type CupDepth } from "../data/mjolkurbikar-template-2026";
 
 export type LoadEventKind = "besta" | "uefa-official" | "uefa-scenario" | "cup-scenario";
 export type LoadCertainty = "scheduled" | "official" | "scenario";
