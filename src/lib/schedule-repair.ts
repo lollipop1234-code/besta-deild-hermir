@@ -1,4 +1,5 @@
 import type { SpringEuropeDate } from "@/data/europe-spring-2027";
+import type { CupDepth } from "@/data/mjolkurbikar-template-2026";
 import type { Pairing, PairingRound } from "./simulator";
 import {
   buildTeamLoadEvents,
@@ -39,6 +40,7 @@ export type FindRepairInput = {
   springEuropeDates: SpringEuropeDate[];
   uefaWindow?: CalendarBlock;
   includeUefaScenario: boolean;
+  cupDepthByTeam?: Record<string, CupDepth>;
   fixtureDateOverrides?: FixtureDateOverrides;
   calendarBlocks: CalendarBlock[];
   avoidFifaWindows: boolean;
@@ -103,6 +105,7 @@ function summaryForTeam(
     springEuropeDates: input.springEuropeDates,
     uefaWindow: input.uefaWindow,
     includeUefaScenario: input.includeUefaScenario,
+    cupDepth: input.cupDepthByTeam?.[team.id] ?? "round32",
     fixtureDateOverrides: overrides,
   });
   return summarizeTeamLoad(visibleTeamLoadEvents(events, input.seasonStart, input.seasonEnd));

@@ -1,8 +1,10 @@
 import type { CalendarBlock, Round, Team } from "./types";
 import type { PairingRound } from "./simulator";
 import type { SpringEuropeDate } from "@/data/europe-spring-2027";
+import { uefaTemplateForPath } from "../data/uefa-template-2026";
+import { cupTemplateForDepth, type CupDepth } from "../data/mjolkurbikar-template-2026";
 
-export type LoadEventKind = "besta" | "uefa-official" | "uefa-scenario";
+export type LoadEventKind = "besta" | "uefa-official" | "uefa-scenario" | "cup-scenario";
 export type LoadCertainty = "scheduled" | "official" | "scenario";
 export type FixtureDateOverrides = Record<string, string>;
 
@@ -63,14 +65,13 @@ function addDays(value: string, days: number) {
   return date.toISOString().slice(0, 10);
 }
 
+// Haldið fyrir einingapróf og sem fallback ef template-gögn vantar fyrir leið.
 export function buildQualifyingScenarioDates(
   team: Team,
   uefaWindow: CalendarBlock | undefined,
 ): string[] {
   if (team.europePath === "none" || !uefaWindow) return [];
 
-  // Þetta eru vísvitandi sviðsmyndardagar, ekki opinberir UEFA-leikdagar.
-  // Meistaraleið er sýnd á miðvikudegi, UECL-leið á fimmtudegi.
   const weekday = team.europePath === "champions" ? 3 : 4;
   const dates: string[] = [];
   let cursor = weekdayOnOrAfter(uefaWindow.start, weekday);
@@ -92,6 +93,7 @@ export function buildTeamLoadEvents({
   springEuropeDates,
   uefaWindow,
   includeUefaScenario,
+  cupDepth = "none",
   fixtureDateOverrides = {},
 }: {
   team: Team;
@@ -102,6 +104,7 @@ export function buildTeamLoadEvents({
   springEuropeDates: SpringEuropeDate[];
   uefaWindow?: CalendarBlock;
   includeUefaScenario: boolean;
+  cupDepth?: CupDepth;
   fixtureDateOverrides?: FixtureDateOverrides;
 }): TeamLoadEvent[] {
   const dateByRound = new Map(roundDates.map((round) => [round.number, round.date]));
@@ -143,7 +146,19 @@ export function buildTeamLoadEvents({
     }
   }
 
-  if (includeUefaScenario && team.europePath !== "none" && uefaWindow) {
+  const templateSlots = uefaTemplateForPath(team.europePath);
+  if (includeUefaScenario && templateSlots.length > 0) {
+    for (const slot of templateSlots) {
+      events.push({
+        id: `uefa-template-${slot.id}`,
+        date: slot.projectedDate,
+        kind: "uefa-scenario",
+        certainty: "scenario",
+        label: slot.label,
+        detail: `${slot.note} · 2026 sniðmát → 2027 áætlun`,
+      });
+    }
+  } else if (includeUefaScenario && team.europePath !== "none" && uefaWindow) {
     for (const date of buildQualifyingScenarioDates(team, uefaWindow)) {
       events.push({
         id: `scenario-${date}`,
@@ -151,9 +166,20 @@ export function buildTeamLoadEvents({
         kind: "uefa-scenario",
         certainty: "scenario",
         label: team.europePath === "champions" ? "UEFA · meistaraleið" : "UEFA · UECL",
-        detail: "Hámarksálagssviðsmynd · dagsetning ekki staðfest af UEFA",
+        detail: "Fallback álagssviðsmynd · dagsetning ekki staðfest af UEFA",
       });
     }
+  }
+
+  for (const cupRound of cupTemplateForDepth(cupDepth)) {
+    events.push({
+      id: `cup-template-${cupRound.id}`,
+      date: cupRound.projectedDate,
+      kind: "cup-scenario",
+      certainty: "scenario",
+      label: `Mjólkurbikar · ${cupRound.label}`,
+      detail: `${cupRound.note} · 2026 sniðmát → 2027 áætlun`,
+    });
   }
 
   return events.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));

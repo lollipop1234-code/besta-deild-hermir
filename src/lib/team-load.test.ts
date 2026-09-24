@@ -48,7 +48,7 @@ describe("team load", () => {
     expect(events.every((event) => event.kind === "besta")).toBe(true);
   });
 
-  it("marks official spring Europe separately from provisional summer scenario", () => {
+  it("marks official spring Europe separately from the 2026 UEFA template scenario", () => {
     const events = buildTeamLoadEvents({
       team: teams[0]!,
       pairingRounds: [],
@@ -62,11 +62,31 @@ describe("team load", () => {
 
     expect(events.some((event) => event.kind === "uefa-official" && event.certainty === "official")).toBe(true);
     expect(events.some((event) => event.kind === "uefa-scenario" && event.certainty === "scenario")).toBe(true);
+    expect(events.some((event) => event.date === "2027-07-07" && event.label.includes("UCL Q1"))).toBe(true);
+    expect(events.some((event) => event.date === "2027-10-13" && event.label.includes("UCL deild"))).toBe(true);
   });
 
-  it("uses Wednesdays for champions-path load scenarios", () => {
+  it("uses Wednesdays for the simple champions-path fallback generator", () => {
     const dates = buildQualifyingScenarioDates(teams[0]!, uefaWindow);
     expect(dates).toEqual(["2027-07-07", "2027-07-14", "2027-07-21"]);
+  });
+
+  it("adds cup template rounds only up to the selected depth", () => {
+    const quarterEvents = buildTeamLoadEvents({
+      team: teams[1]!,
+      pairingRounds: [],
+      roundDates: [],
+      teamNames: {},
+      springEuropeTeamId: "none",
+      springEuropeDates: [],
+      includeUefaScenario: false,
+      cupDepth: "quarter",
+    });
+
+    const cupEvents = quarterEvents.filter((event) => event.kind === "cup-scenario");
+    expect(cupEvents).toHaveLength(3);
+    expect(cupEvents.map((event) => event.date)).toEqual(["2027-04-03", "2027-05-12", "2027-06-09"]);
+    expect(cupEvents.every((event) => event.certainty === "scenario")).toBe(true);
   });
 
   it("detects a confirmed gap below the two-full-day minimum", () => {

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { calendar2027 } from "@/data/calendar-2027";
 import { europePathProfiles } from "@/data/europe-2027";
 import { conferenceSpring2027, conferenceSpringSource } from "@/data/europe-spring-2027";
+import type { CupDepth } from "@/data/mjolkurbikar-template-2026";
 import { expansionTeams, teams2026 } from "@/data/teams-2026";
 import { findScheduleRepair, type ScheduleRepairSuggestion } from "@/lib/schedule-repair";
 import {
@@ -82,6 +83,7 @@ export default function Playground() {
   const [protectGrass, setProtectGrass] = useState(false);
   const [springEuropeTeamId, setSpringEuropeTeamId] = useState("none");
   const [loadTeamId, setLoadTeamId] = useState("vikingur");
+  const [cupDepthByTeam, setCupDepthByTeam] = useState<Record<string, CupDepth>>({});
   const [fixtureDateOverrides, setFixtureDateOverrides] = useState<FixtureDateOverrides>({});
   const [teams, setTeams] = useState<Team[]>([...teams2026, ...expansionTeams]);
   const [selectedRound, setSelectedRound] = useState(1);
@@ -111,6 +113,7 @@ export default function Playground() {
   const noLights = activeTeams.filter((team) => team.floodlights === false).length;
   const springEuropeTeam = activeTeams.find((team) => team.id === springEuropeTeamId);
   const loadTeam = activeTeams.find((team) => team.id === loadTeamId) ?? activeTeams[0];
+  const loadTeamCupDepth = loadTeam ? (cupDepthByTeam[loadTeam.id] ?? "round32") : "none";
   const qualifyingWindow = calendar2027.find((block) => block.id === "uefa-qualifying-2027");
   const movedInRound = round?.pairings.filter((pair) => Boolean(fixtureDateOverrides[fixtureKey(round.number, pair.home, pair.away)])).length ?? 0;
 
@@ -150,9 +153,10 @@ export default function Playground() {
       springEuropeDates: conferenceSpring2027,
       uefaWindow: qualifyingWindow,
       includeUefaScenario: showUefa,
+      cupDepth: loadTeamCupDepth,
       fixtureDateOverrides,
     });
-  }, [loadTeam, pairingRounds, calendar.rounds, names, springEuropeTeamId, qualifyingWindow, showUefa, fixtureDateOverrides]);
+  }, [loadTeam, pairingRounds, calendar.rounds, names, springEuropeTeamId, qualifyingWindow, showUefa, loadTeamCupDepth, fixtureDateOverrides]);
 
   const visibleLoadEvents = useMemo(
     () => visibleTeamLoadEvents(loadEvents, seasonStart, seasonEnd),
@@ -173,16 +177,22 @@ export default function Playground() {
       springEuropeDates: conferenceSpring2027,
       uefaWindow: qualifyingWindow,
       includeUefaScenario: showUefa,
+      cupDepthByTeam,
       fixtureDateOverrides,
       calendarBlocks: calendar2027,
       avoidFifaWindows: avoidFifa,
       seasonStart,
       seasonEnd,
     });
-  }, [loadTeam, activeTeams, pairingRounds, calendar.rounds, names, springEuropeTeamId, qualifyingWindow, showUefa, fixtureDateOverrides, avoidFifa, seasonStart, seasonEnd]);
+  }, [loadTeam, activeTeams, pairingRounds, calendar.rounds, names, springEuropeTeamId, qualifyingWindow, showUefa, cupDepthByTeam, fixtureDateOverrides, avoidFifa, seasonStart, seasonEnd]);
 
   function updateTeam(id: string, patch: Partial<Team>) {
     setTeams((current) => current.map((team) => (team.id === id ? { ...team, ...patch } : team)));
+    setFixtureDateOverrides({});
+  }
+
+  function updateCupDepth(id: string, depth: CupDepth) {
+    setCupDepthByTeam((current) => ({ ...current, [id]: depth }));
     setFixtureDateOverrides({});
   }
 
@@ -221,8 +231,8 @@ export default function Playground() {
       </header>
 
       <section className="intro">
-        <p>Prófaðu stærð deildar, fyrirkomulag, velli og Evrópuálag. Breyttu einu atriði og sjáðu strax hvað það gerir við mótið.</p>
-        <p className="data-note">Liðalistinn er vinnulisti úr 2026 þar til þátttakendur 2027 liggja endanlega fyrir.</p>
+        <p>Prófaðu stærð deildar, fyrirkomulag, velli, bikarferð og Evrópuálag. Breyttu einu atriði og sjáðu strax hvað það gerir við mótið.</p>
+        <p className="data-note">2027 er hermt með staðfestum FIFA-gluggum og 2026 leikjadagatali UEFA/Mjólkurbikars sem merktum sniðmátum þar til 2027 dagsetningar liggja fyrir.</p>
       </section>
 
       <div className="workspace">
@@ -244,7 +254,7 @@ export default function Playground() {
           </div>
           <div className="toggle-list">
             <Toggle checked={avoidFifa} onChange={setAvoidFifa} label="Forðast FIFA-glugga" />
-            <Toggle checked={showUefa} onChange={setShowUefa} label="Sýna mögulegt Evrópuálag" />
+            <Toggle checked={showUefa} onChange={setShowUefa} label="Sýna UEFA 2026 sniðmát" />
             <Toggle checked={preferEvening} onChange={setPreferEvening} label="Prófa kvöldslot kl. 19:15" />
             <Toggle checked={protectGrass} onChange={(value) => { setProtectGrass(value); setFixtureDateOverrides({}); }} label="Hlífa grasi í apríl / október" />
           </div>
@@ -309,7 +319,7 @@ export default function Playground() {
           </div>
 
           <div className="panel europe-panel">
-            <div className="panel-title-row"><div><div className="eyebrow">Evrópa 2027</div><h2>Álagið getur byrjað strax um vorið</h2></div><span className="quiet">{championsTeams.length} meistaraleið · {conferenceTeams.length} UECL-leið</span></div>
+            <div className="panel-title-row"><div><div className="eyebrow">Evrópa 2027</div><h2>2026 dagatalið gefur okkur raunhæft sniðmát</h2></div><span className="quiet">{championsTeams.length} meistaraleið · {conferenceTeams.length} UECL-leið</span></div>
             {springEuropeTeam && (
               <div className="europe-team-list">
                 <div className="europe-team"><div><strong>{springEuropeTeam.name}</strong><span>UECL 2026/27 carryover</span></div><p>Ef liðið er enn í Sambandsdeildinni koma staðfestir UEFA-leikdagar inn í íslenska vorið 2027.</p><p className="europe-detail">{conferenceSpring2027.filter((match) => match.date >= "2027-04-01").map((match) => shortDate(match.date)).join(" · ")}</p></div>
@@ -320,16 +330,18 @@ export default function Playground() {
               <div className="europe-team-list">{europeTeams.map((team) => {
                 const profile = team.europePath === "none" ? null : europePathProfiles[team.europePath];
                 if (!profile) return null;
-                return <div className="europe-team" key={team.id}><div><strong>{team.name}</strong><span>{profile.label}</span></div><p>{profile.description}</p><p className="europe-detail">{profile.autumnRisk}</p></div>;
+                return <div className="europe-team" key={team.id}><div><strong>{team.name}</strong><span>{profile.label}</span></div><p>{profile.description}</p><p className="europe-detail">Hermirinn notar einstök leikslot úr 2026 dagatalinu fyrir undankeppni og mögulega deildarkeppni.</p></div>;
               })}</div>
             )}
-            <div className="provisional-note"><b>2027/28 UEFA-dagsetningar eru ekki endanlega birtar.</b><span>Sumar- og haustálag er því sviðsmynd þar til UEFA staðfestir leikdagana.</span></div>
+            <div className="provisional-note"><b>2026 sniðmát → 2027 áætlun.</b><span>Dagarnir eru færðir um 364 daga svo vikudagarnir haldist sambærilegir. Þeir verða skipt út um leið og UEFA birtir 2027/28 dagatalið.</span></div>
           </div>
 
           <TeamLoadPanel
             teams={activeTeams}
             selectedTeamId={loadTeam?.id ?? ""}
             onSelectTeam={setLoadTeamId}
+            cupDepth={loadTeamCupDepth}
+            onCupDepthChange={(depth) => loadTeam && updateCupDepth(loadTeam.id, depth)}
             summary={loadSummary}
             splitIsUnresolved={splitIsUnresolved}
             repairSuggestion={repairSuggestion}
@@ -341,12 +353,11 @@ export default function Playground() {
           <div className="panel calendar-panel">
             <div className="panel-title-row"><div><div className="eyebrow">Dagatal 2027</div><h2>Hvar þrengir að?</h2></div><span className="quiet">{calendar.rounds.length}/{metrics.rounds} leikdagar fundnir</span></div>
             <div className="month-line" aria-hidden="true">{["APR", "MAÍ", "JÚN", "JÚL", "ÁGÚ", "SEP", "OKT"].map((month) => <span key={month}>{month}</span>)}</div>
-            <div className="timeline"><div className="timeline-season" /><div className="timeline-block block-fifa-june" title="FIFA landsleikjagluggi">FIFA</div>{showUefa && <div className="timeline-block block-uefa" title="Mögulegar UEFA-undankeppnir">UEFA</div>}{avoidFifa && <div className="timeline-block block-fifa-autumn" title="FIFA landsleikjagluggi">FIFA</div>}</div>
+            <div className="timeline"><div className="timeline-season" /><div className="timeline-block block-fifa-june" title="FIFA landsleikjagluggi">FIFA</div>{showUefa && <div className="timeline-block block-uefa" title="UEFA 2026 sniðmát">UEFA</div>}{avoidFifa && <div className="timeline-block block-fifa-autumn" title="FIFA landsleikjagluggi">FIFA</div>}</div>
             <div className="calendar-notes">
               {calendar2027.filter((block) => block.start >= "2027-04-01" && block.start <= "2027-10-31").map((block) => (
-                <div key={block.id} className={`calendar-note note-${block.kind}`}><div><strong>{block.label}</strong><span>{dateSpan(block.start, block.end)}</span></div><p>{block.note}</p><small className={`confidence confidence-${block.confidence}`}>{block.confidence === "official" ? "Staðfest" : "Áætlað"}{block.constraint === "avoid" ? " · forðast" : block.constraint === "blackout" ? " · lokað" : ""}</small>{block.sourceUrl && <div style={{ marginTop: 8 }}><a className="quiet" href={block.sourceUrl} target="_blank" rel="noreferrer">{block.sourceLabel ?? "Heimild"} ↗</a></div>}</div>
+                <div key={block.id} className={`calendar-note note-${block.kind}`}><div><strong>{block.label}</strong><span>{dateSpan(block.start, block.end)}</span></div><p>{block.note}</p><small className={`confidence confidence-${block.confidence}`}>{block.confidence === "official" ? "Staðfest" : "Sniðmát"}{block.constraint === "avoid" ? " · forðast" : block.constraint === "blackout" ? " · lokað" : ""}</small>{block.sourceUrl && <div style={{ marginTop: 8 }}><a className="quiet" href={block.sourceUrl} target="_blank" rel="noreferrer">{block.sourceLabel ?? "Heimild"} ↗</a></div>}</div>
               ))}
-              <div className="calendar-note note-info"><div><strong>Mjólkurbikar 2027</strong><span>bíður</span></div><p>Keppnin er staðfest út 2027, en nákvæmir leikdagar 2027 eru ekki settir inn fyrr en opinbert KSÍ-dagatal liggur fyrir.</p><small className="confidence confidence-provisional">Ekki giskað</small></div>
             </div>
           </div>
 
@@ -382,11 +393,11 @@ export default function Playground() {
             )}
           </div>
 
-          <div className="rule-strip"><div><span className="rule-dot hard" /><b>Harð regla</b><span>aðeins þegar heimild segir að lokað sé</span></div><div><span className="rule-dot soft" /><b>Hermisstilling</b><span>t.d. grasvernd, kvöldslot og samþykktar færslur</span></div><div><span className="rule-dot info" /><b>Sviðsmynd</b><span>óstaðfest UEFA 2027/28 álag</span></div></div>
+          <div className="rule-strip"><div><span className="rule-dot hard" /><b>Harð regla</b><span>aðeins þegar heimild segir að lokað sé</span></div><div><span className="rule-dot soft" /><b>Hermisstilling</b><span>t.d. grasvernd, kvöldslot og samþykktar færslur</span></div><div><span className="rule-dot info" /><b>Sniðmát</b><span>UEFA og Mjólkurbikar 2026 færð yfir á 2027</span></div></div>
         </section>
       </div>
 
-      <footer><span>Tilraunaverkefni · ekki opinber leikjaskrá KSÍ</span><span>2027 dagatal · staðfestar og áætlaðar forsendur aðgreindar</span></footer>
+      <footer><span>Tilraunaverkefni · ekki opinber leikjaskrá KSÍ</span><span>2027 hermir · staðfestar reglur og 2026 sniðmát aðgreind</span></footer>
     </main>
   );
 }

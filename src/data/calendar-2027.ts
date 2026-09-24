@@ -1,9 +1,11 @@
 import type { CalendarBlock } from "@/lib/types";
 
+const uefa2026Source = "https://www.uefa.com/news-media/news/02a0-1f71bdf70a9a-b6067bd647f2-1000--2026-european-football-calendar-match-and-draw-dates-for-a/";
+const cup2026Source = "https://www.ksi.is/oll-mot/mot?id=7059738";
+
 // FIFA-gluggarnir eru opinberir landsliðsgluggar, en eru ekki sjálfkrafa
-// innlent leikjabann. Hermirinn forðast þá sjálfgefið sem sterka
-// dagskrárforsendu. UEFA 2027/28 dagsetningar eru enn vinnusviðsmynd þar til
-// UEFA birtir endanlegt leikdagatal.
+// innlent leikjabann. UEFA og Mjólkurbikar 2027 dagsetningar hér að neðan eru
+// hermisniðmát byggð á raunverulegri 2026 niðurröðun, ekki staðfest 2027 dagatal.
 export const calendar2027: CalendarBlock[] = [
   {
     id: "fifa-mar-2027",
@@ -16,6 +18,18 @@ export const calendar2027: CalendarBlock[] = [
     note: "Opinber FIFA international match window. Hermirinn forðast gluggann sjálfgefið vegna leikmannalosunar, en merkir hann ekki sem innlent leikjabann.",
     sourceLabel: "FIFA International Match Calendar",
     sourceUrl: "https://ipt.fifa.com/en/tournament-organisation/international-match-calendars",
+  },
+  {
+    id: "cup-template-2027",
+    label: "Mjólkurbikar · 2026 sniðmát",
+    start: "2027-04-01",
+    end: "2027-09-10",
+    kind: "cup",
+    constraint: "info",
+    confidence: "provisional",
+    note: "2026 sniðmátið gefur 32-liða 1.–5. apríl 2027, 16-liða 12.–13. maí, 8-liða 9.–12. júní, undanúrslitaslot 27. júní / 20. júlí og úrslit 10. september. Þetta er hermiforsenda þar til KSÍ birtir 2027 dagatal.",
+    sourceLabel: "KSÍ · Mjólkurbikar karla 2026",
+    sourceUrl: cup2026Source,
   },
   {
     id: "fifa-june-2027",
@@ -31,23 +45,27 @@ export const calendar2027: CalendarBlock[] = [
   },
   {
     id: "uefa-qualifying-2027",
-    label: "Evrópu-undankeppnir",
-    start: "2027-07-05",
-    end: "2027-08-29",
+    label: "UEFA · 2026 sniðmát",
+    start: "2027-07-07",
+    end: "2027-08-26",
     kind: "uefa",
     constraint: "info",
     confidence: "provisional",
-    note: "Vinnugluggi fyrir UCL/UEL/UECL Q1–play-off. Nákvæmir 2027/28 leikdagar eru ekki birtir enn og verða uppfærðir þegar UEFA staðfestir þá.",
+    note: "Raunverulegir UCL/UEL/UECL leikdagar 2026 eru færðir um 364 daga til að halda sambærilegum vikudögum fyrir 2027 herminn. Einstök UEFA-slot eru notuð í álagsreikningnum.",
+    sourceLabel: "UEFA · 2026 European football calendar",
+    sourceUrl: uefa2026Source,
   },
   {
     id: "uefa-league-phase-autumn-2027",
-    label: "Möguleg deildarkeppni UEFA",
-    start: "2027-09-01",
-    end: "2027-12-23",
+    label: "UEFA deildarkeppni · 2026 sniðmát",
+    start: "2027-09-08",
+    end: "2027-12-16",
     kind: "uefa",
     constraint: "info",
     confidence: "provisional",
-    note: "Íslenskt lið sem kemst í deildarkeppni getur átt reglulega Evrópuleiki um haustið. Þetta er sviðsmynd, ekki lokað UEFA-dagatal.",
+    note: "Haustleikdagar UCL og Conference League byggja á staðfestu 2026/27 dagatali UEFA, færðu yfir á sambærilega vikudaga 2027. Þetta er sviðsmynd, ekki staðfest 2027/28 dagatal.",
+    sourceLabel: "UEFA · 2026 European football calendar",
+    sourceUrl: uefa2026Source,
   },
   {
     id: "fifa-autumn-2027",

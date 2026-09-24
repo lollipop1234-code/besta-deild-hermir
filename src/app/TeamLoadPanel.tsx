@@ -1,3 +1,4 @@
+import type { CupDepth } from "@/data/mjolkurbikar-template-2026";
 import type { ScheduleRepairSuggestion } from "@/lib/schedule-repair";
 import type { TeamLoadSummary } from "@/lib/team-load";
 import type { Team } from "@/lib/types";
@@ -19,6 +20,8 @@ export default function TeamLoadPanel({
   teams,
   selectedTeamId,
   onSelectTeam,
+  cupDepth,
+  onCupDepthChange,
   summary,
   splitIsUnresolved,
   repairSuggestion,
@@ -29,6 +32,8 @@ export default function TeamLoadPanel({
   teams: Team[];
   selectedTeamId: string;
   onSelectTeam: (teamId: string) => void;
+  cupDepth: CupDepth;
+  onCupDepthChange: (depth: CupDepth) => void;
   summary: TeamLoadSummary;
   splitIsUnresolved: boolean;
   repairSuggestion: ScheduleRepairSuggestion | null;
@@ -49,14 +54,35 @@ export default function TeamLoadPanel({
           <div className="eyebrow">Álag á lið</div>
           <h2>{selectedTeam?.name ?? "Veldu lið"}</h2>
         </div>
-        <select
-          className={styles.select}
-          value={selectedTeam?.id ?? ""}
-          onChange={(event) => onSelectTeam(event.target.value)}
-          aria-label="Veldu lið til að skoða álag"
-        >
-          {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-        </select>
+        <div className={styles.headControls}>
+          <label>
+            <span>Lið</span>
+            <select
+              className={styles.select}
+              value={selectedTeam?.id ?? ""}
+              onChange={(event) => onSelectTeam(event.target.value)}
+              aria-label="Veldu lið til að skoða álag"
+            >
+              {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Bikarferð</span>
+            <select
+              className={styles.select}
+              value={cupDepth}
+              onChange={(event) => onCupDepthChange(event.target.value as CupDepth)}
+              aria-label="Veldu hversu langt liðið fer í Mjólkurbikar"
+            >
+              <option value="none">Ekki með</option>
+              <option value="round32">32-liða</option>
+              <option value="round16">16-liða</option>
+              <option value="quarter">8-liða</option>
+              <option value="semi">Undanúrslit</option>
+              <option value="final">Úrslit</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       <div className={styles.summary}>
@@ -77,7 +103,7 @@ export default function TeamLoadPanel({
       <div className={`${styles.repair} ${repairSuggestion?.basis === "scenario" ? styles.repairScenario : ""}`}>
         <div className={styles.repairCopy}>
           <div className={styles.repairLabel}>
-            Laga dagskrá · {repairSuggestion?.basis === "scenario" ? "UEFA-sviðsmynd" : "staðfestir leikdagar"}
+            Laga dagskrá · {repairSuggestion?.basis === "scenario" ? "sviðsmynd" : "staðfestir leikdagar"}
           </div>
           {repairSuggestion ? (
             <>
@@ -99,7 +125,7 @@ export default function TeamLoadPanel({
           ) : (
             <>
               <strong>Engin bein hvíldarvilla til að laga.</strong>
-              <p>Ef þú merkir lið í Evrópu eða velur lið sem er enn í UECL frá fyrra ári getur tillöguvélin byrjað að prófa færslur.</p>
+              <p>Prófaðu Evrópuleið eða lengri bikarferð og sjáðu hvort 2026 sniðmátið þrengi að dagskránni.</p>
             </>
           )}
         </div>
@@ -127,12 +153,23 @@ export default function TeamLoadPanel({
               ? styles.eventScenario
               : event.kind === "uefa-official"
                 ? styles.eventOfficial
-                : "";
+                : event.kind === "cup-scenario"
+                  ? styles.eventCup
+                  : "";
             const badgeClass = event.kind === "uefa-scenario"
               ? styles.badgeScenario
               : event.kind === "uefa-official"
                 ? styles.badgeUefa
-                : "";
+                : event.kind === "cup-scenario"
+                  ? styles.badgeCup
+                  : "";
+            const badge = event.kind === "besta"
+              ? "Besta"
+              : event.kind === "uefa-official"
+                ? "UEFA"
+                : event.kind === "cup-scenario"
+                  ? "Bikar ?"
+                  : "UEFA ?";
 
             return (
               <div className={styles.eventWrap} key={event.id}>
@@ -145,9 +182,7 @@ export default function TeamLoadPanel({
                 <div className={`${styles.event} ${eventClass}`}>
                   <div className={styles.eventTop}>
                     <span className={styles.date}>{shortDate(event.date)}</span>
-                    <span className={`${styles.badge} ${badgeClass}`}>
-                      {event.kind === "besta" ? "Besta" : event.kind === "uefa-official" ? "UEFA" : "UEFA ?"}
-                    </span>
+                    <span className={`${styles.badge} ${badgeClass}`}>{badge}</span>
                   </div>
                   <strong>{event.label}</strong>
                   <p>{event.detail}</p>
@@ -162,7 +197,7 @@ export default function TeamLoadPanel({
         <span><b>KSÍ 15.5:</b> gildandi 2026-regla gerir almennt ráð fyrir minnst 2 heilum dögum milli kappleikja; mótanefnd getur stytt ef nauðsyn krefur.</span>
         <a href="https://www.ksi.is/api/download/media/ec1f1lv1/reglugerd-ksi-um-knattspyrnumo-t-janu-ar-2026.pdf#page=8" target="_blank" rel="noreferrer">Sjá reglugerð ↗</a>
         {splitIsUnresolved && <span>Split-leikir eru ekki taldir hér fyrr en mótherjar/bye liggja fyrir.</span>}
-        <span>Gul UEFA-spjöld eru álagssviðsmyndir fyrir 2027/28, ekki staðfestir leikdagar.</span>
+        <span>Gul UEFA- og bikarspjöld eru 2026 sniðmát færð yfir á 2027, ekki staðfest 2027 dagatal.</span>
       </div>
     </div>
   );
