@@ -1,10 +1,11 @@
-import type { Team } from "@/lib/types";
+import type { ScheduleRepairSuggestion } from "@/lib/schedule-repair";
 import type { TeamLoadSummary } from "@/lib/team-load";
+import type { Team } from "@/lib/types";
 
 import styles from "./TeamLoadPanel.module.css";
 
 function shortDate(value: string) {
-  return new Intl.DateTimeFormat("is-IS", { day: "numeric", month: "short" }).format(
+  return new Intl.DateTimeFormat("is-IS", { day: "numeric", month: "short", weekday: "short" }).format(
     new Date(`${value}T12:00:00Z`),
   );
 }
@@ -20,14 +21,26 @@ export default function TeamLoadPanel({
   onSelectTeam,
   summary,
   splitIsUnresolved,
+  repairSuggestion,
+  onApplyRepair,
+  appliedRepairCount,
+  onResetRepairs,
 }: {
   teams: Team[];
   selectedTeamId: string;
   onSelectTeam: (teamId: string) => void;
   summary: TeamLoadSummary;
   splitIsUnresolved: boolean;
+  repairSuggestion: ScheduleRepairSuggestion | null;
+  onApplyRepair: (suggestion: ScheduleRepairSuggestion) => void;
+  appliedRepairCount: number;
+  onResetRepairs: () => void;
 }) {
   const selectedTeam = teams.find((team) => team.id === selectedTeamId) ?? teams[0];
+  const opponent = repairSuggestion
+    ? teams.find((team) => team.id === repairSuggestion.opponentId)
+    : undefined;
+  const hasRisk = summary.belowMinimumCount + summary.scenarioRiskCount > 0;
 
   return (
     <div className={`panel ${styles.panel}`}>
@@ -58,6 +71,49 @@ export default function TeamLoadPanel({
         <div className={`${styles.metric} ${summary.threeInEightCount > 0 ? styles.metricWarn : ""}`}>
           <strong>{summary.threeInEightCount}</strong>
           <span>röð með 3 leikjum innan 8 daga</span>
+        </div>
+      </div>
+
+      <div className={`${styles.repair} ${repairSuggestion?.basis === "scenario" ? styles.repairScenario : ""}`}>
+        <div className={styles.repairCopy}>
+          <div className={styles.repairLabel}>
+            Laga dagskrá · {repairSuggestion?.basis === "scenario" ? "UEFA-sviðsmynd" : "staðfestir leikdagar"}
+          </div>
+          {repairSuggestion ? (
+            <>
+              <strong>Færa umferð {repairSuggestion.round} um {Math.abs(repairSuggestion.shiftDays)} dag{Math.abs(repairSuggestion.shiftDays) === 1 ? "" : "a"}?</strong>
+              <p>
+                {shortDate(repairSuggestion.originalDate)} → {shortDate(repairSuggestion.proposedDate)} · gegn {opponent?.name ?? repairSuggestion.opponentId}.
+                Hvíldarvandamálið hjá {selectedTeam?.name} minnkar án þess að búa til nýtt álagsvandamál hjá mótherjanum.
+              </p>
+              <div className={styles.repairNumbers}>
+                <span>{repairSuggestion.beforeSelected.belowMinimumCount + repairSuggestion.beforeSelected.scenarioRiskCount} → {repairSuggestion.afterSelected.belowMinimumCount + repairSuggestion.afterSelected.scenarioRiskCount} þröng bil</span>
+                <span>{repairSuggestion.beforeSelected.threeInEightCount} → {repairSuggestion.afterSelected.threeInEightCount} × 3 leikir / 8 dagar</span>
+              </div>
+            </>
+          ) : hasRisk ? (
+            <>
+              <strong>Engin einföld örugg færsla fannst.</strong>
+              <p>Vélin prófaði næstu daga en fann ekki færslu sem lagar valda liðið án þess að auka álag hjá mótherjanum eða fara inn í lokaðan glugga.</p>
+            </>
+          ) : (
+            <>
+              <strong>Engin bein hvíldarvilla til að laga.</strong>
+              <p>Ef þú merkir lið í Evrópu eða velur lið sem er enn í UECL frá fyrra ári getur tillöguvélin byrjað að prófa færslur.</p>
+            </>
+          )}
+        </div>
+        <div className={styles.repairActions}>
+          {repairSuggestion && (
+            <button type="button" className={styles.primaryButton} onClick={() => onApplyRepair(repairSuggestion)}>
+              Nota tillögu
+            </button>
+          )}
+          {appliedRepairCount > 0 && (
+            <button type="button" className={styles.secondaryButton} onClick={onResetRepairs}>
+              Endurstilla færslur ({appliedRepairCount})
+            </button>
+          )}
         </div>
       </div>
 
