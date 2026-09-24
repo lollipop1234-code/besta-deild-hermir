@@ -17,25 +17,35 @@ export function formatMetrics(preset: FormatPreset) {
   }
 }
 
-function addDays(date: Date, days: number) {
-  const next = new Date(date);
-  next.setUTCDate(next.getUTCDate() + days);
-  return next;
+function dayNumber(value: string) {
+  return Math.floor(new Date(`${value}T12:00:00Z`).getTime() / 86_400_000);
 }
 
-function iso(date: Date) {
-  return date.toISOString().slice(0, 10);
+function dateFromDay(value: number) {
+  return new Date(value * 86_400_000).toISOString().slice(0, 10);
 }
 
 function inBlock(date: string, block: CalendarBlock) {
   return date >= block.start && date <= block.end;
 }
 
-function nextSaturday(onOrAfter: string) {
-  const date = new Date(`${onOrAfter}T12:00:00Z`);
-  const day = date.getUTCDay();
-  const delta = (6 - day + 7) % 7;
-  return addDays(date, delta);
+function isBlocked(date: string, blocks: CalendarBlock[], avoidFifaWindows: boolean) {
+  return blocks.some((block) => {
+    if (!inBlock(date, block)) return false;
+    if (block.constraint === "blackout") return true;
+    return avoidFifaWindows && block.kind === "fifa" && block.constraint === "avoid";
+  });
+}
+
+function weekdayPenalty(day: number) {
+  const weekday = new Date(day * 86_400_000).getUTCDay();
+  if (weekday === 6) return 0;
+  if (weekday === 0) return 0.35;
+  if (weekday === 5) return 0.7;
+  if (weekday === 3) return 0.9;
+  if (weekday === 4) return 1.05;
+  if (weekday === 2) return 1.25;
+  return 1.5;
 }
 
 const icelandicMonths = [
@@ -48,6 +58,25 @@ function dateLabel(value: string) {
   return `${date.getUTCDate()}. ${icelandicMonths[date.getUTCMonth()]}`;
 }
 
+function maxFittableDates(
+  startDay: number,
+  endDay: number,
+  minGap: number,
+  allowedDays: Set<number>,
+) {
+  let count = 0;
+  let cursor = startDay;
+
+  while (cursor <= endDay) {
+    while (cursor <= endDay && !allowedDays.has(cursor)) cursor += 1;
+    if (cursor > endDay) break;
+    count += 1;
+    cursor += minGap;
+  }
+
+  return count;
+}
+
 export function buildRoundDates(
   preset: FormatPreset,
   seasonStart: string,
@@ -56,25 +85,53 @@ export function buildRoundDates(
   avoidFifaWindows: boolean,
 ): { rounds: Round[]; shortfall: number } {
   const required = formatMetrics(preset).rounds;
-  const dates: Round[] = [];
-  let cursor = nextSaturday(seasonStart);
+  const startDay = dayNumber(seasonStart);
+  const endDay = dayNumber(seasonEnd);
+  if (endDay < startDay) return { rounds: [], shortfall: required };
 
-  while (iso(cursor) <= seasonEnd && dates.length < required) {
-    const value = iso(cursor);
-    const mandatoryBlackout = blocks.some(
-      (block) => block.constraint === "blackout" && inBlock(value, block),
-    );
-    const fifaAvoidance = avoidFifaWindows && blocks.some(
-      (block) => block.kind === "fifa" && block.constraint === "avoid" && inBlock(value, block),
-    );
-
-    if (!mandatoryBlackout && !fifaAvoidance) {
-      dates.push({ number: dates.length + 1, date: value, label: dateLabel(value) });
-    }
-    cursor = addDays(cursor, 7);
+  // Tvær heilar nætur/hvíldardagar þýða að heilar umferðir geta ekki legið
+  // nær hvor annarri en þrjá almanaksdaga. Innan þess ramma er öllu mótinu
+  // endurraðað þegar notandinn breytir upphafi eða lokum tímabilsins.
+  const minGap = 3;
+  const allowedDays = new Set<number>();
+  for (let day = startDay; day <= endDay; day += 1) {
+    if (!isBlocked(dateFromDay(day), blocks, avoidFifaWindows)) allowedDays.add(day);
   }
 
-  return { rounds: dates, shortfall: Math.max(0, required - dates.length) };
+  const targetCount = Math.min(required, maxFittableDates(startDay, endDay, minGap, allowedDays));
+  const rounds: Round[] = [];
+  let previousDay = startDay - minGap;
+  const span = endDay - startDay;
+
+  for (let index = 0; index < targetCount; index += 1) {
+    const remaining = targetCount - index - 1;
+    const earliest = Math.max(startDay, previousDay + minGap);
+    if (earliest > endDay) break;
+
+    const ideal = targetCount === 1
+      ? startDay
+      : startDay + (span * index) / (targetCount - 1);
+
+    const candidates = Array.from(allowedDays)
+      .filter((day) => day >= earliest && day <= endDay)
+      .sort((a, b) => {
+        const costA = Math.abs(a - ideal) + weekdayPenalty(a);
+        const costB = Math.abs(b - ideal) + weekdayPenalty(b);
+        return costA - costB || a - b;
+      });
+
+    const chosen = candidates.find((day) => (
+      maxFittableDates(day + minGap, endDay, minGap, allowedDays) >= remaining
+    ));
+
+    if (chosen === undefined) break;
+
+    const value = dateFromDay(chosen);
+    rounds.push({ number: index + 1, date: value, label: dateLabel(value) });
+    previousDay = chosen;
+  }
+
+  return { rounds, shortfall: Math.max(0, required - rounds.length) };
 }
 
 function balancedOrientation(
@@ -158,12 +215,9 @@ export function buildPairingRounds(preset: FormatPreset, teams: Team[]) {
   }
 
   if (preset === "ten-split") {
-    // 18 umferðir í tvöfaldri 10-liða deild. Eftir skiptingu 5/5 þarf 10
-    // leikdagaglugga svo hvert lið geti spilað 8 leiki og fengið tvær bye-umferðir.
     return [...regular, ...splitPlaceholders(regular.length + 1, 10)];
   }
 
-  // Núverandi 12 liða kerfi: 22 umferðir + 5 leikja split.
   return [...regular, ...splitPlaceholders(regular.length + 1, 5)];
 }
 

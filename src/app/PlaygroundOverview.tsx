@@ -5,6 +5,8 @@ import type { CalendarBlock, FormatPreset, Round } from "@/lib/types";
 
 import styles from "./PlaygroundOverview.module.css";
 
+const DEFAULT_SEASON_END = "2027-10-23";
+
 const presetLabel: Record<FormatPreset, string> = {
   "ten-triple": "Þreföld umferð",
   "ten-split": "5/5 split",
@@ -16,6 +18,10 @@ function dayNumber(value: string) {
   return Math.floor(new Date(`${value}T12:00:00Z`).getTime() / 86_400_000);
 }
 
+function daysBetween(a: string, b: string) {
+  return dayNumber(b) - dayNumber(a);
+}
+
 function clamp(value: number) {
   return Math.max(0, Math.min(100, value));
 }
@@ -25,9 +31,9 @@ function position(value: string, start: string, end: string) {
   return clamp(((dayNumber(value) - dayNumber(start)) / total) * 100);
 }
 
-function width(start: string, end: string, seasonStart: string, seasonEnd: string) {
-  const left = position(start < seasonStart ? seasonStart : start, seasonStart, seasonEnd);
-  const right = position(end > seasonEnd ? seasonEnd : end, seasonStart, seasonEnd);
+function width(start: string, end: string, boardStart: string, boardEnd: string) {
+  const left = position(start < boardStart ? boardStart : start, boardStart, boardEnd);
+  const right = position(end > boardEnd ? boardEnd : end, boardStart, boardEnd);
   return Math.max(1.4, right - left);
 }
 
@@ -62,6 +68,11 @@ function shortDate(value: string) {
 function signedDays(value: number) {
   if (value === 0) return "sama dag";
   return `${value > 0 ? "+" : ""}${value} dagar`;
+}
+
+function isWeekday(value: string) {
+  const day = new Date(`${value}T12:00:00Z`).getUTCDay();
+  return day >= 1 && day <= 5;
 }
 
 function TeamCountButton({ teams, active, onClick }: { teams: 10 | 12 | 14; active: boolean; onClick: () => void }) {
@@ -101,19 +112,26 @@ export default function PlaygroundOverview({
 }) {
   const metrics = formatMetrics(preset);
   const teamCount = metrics.teams;
-  const months = monthSegments(seasonStart, seasonEnd);
-  const blocks = calendarBlocks.filter((block) => block.end >= seasonStart && block.start <= seasonEnd);
-  const fifaBlocks = blocks.filter((block) => block.kind === "fifa");
-  const uefaBlocks = blocks.filter((block) => block.kind === "uefa");
-  const cupEvents = teamEvents.filter((event) => event.kind === "cup-scenario");
   const baselineStart = baselineDateIn2027(besta2026Baseline.seasonStart);
   const baselineRegularEnd = baselineDateIn2027(besta2026Baseline.regularEnd);
   const baselineEnd = baselineDateIn2027(besta2026Baseline.seasonEnd);
+  const boardStart = seasonStart < baselineStart ? seasonStart : baselineStart;
+  const boardEnd = seasonEnd > baselineEnd ? seasonEnd : baselineEnd;
+  const months = monthSegments(boardStart, boardEnd);
+  const blocks = calendarBlocks.filter((block) => block.end >= boardStart && block.start <= boardEnd);
+  const fifaBlocks = blocks.filter((block) => block.kind === "fifa");
+  const uefaBlocks = blocks.filter((block) => block.kind === "uefa");
+  const cupEvents = teamEvents.filter((event) => event.kind === "cup-scenario");
   const trialEnd = rounds.at(-1)?.date ?? seasonEnd;
   const splitStartRound = preset === "current-12-split" ? 23 : preset === "ten-split" ? 19 : null;
   const trialSplitStart = splitStartRound ? rounds[splitStartRound - 1]?.date : undefined;
   const endDifference = dayNumber(trialEnd) - dayNumber(baselineEnd);
   const splitDifference = trialSplitStart ? dayNumber(trialSplitStart) - dayNumber(baselineDateIn2027(besta2026Baseline.splitWindows[0].start)) : null;
+  const seasonChange = dayNumber(seasonEnd) - dayNumber(DEFAULT_SEASON_END);
+  const gaps = rounds.slice(1).map((round, index) => daysBetween(rounds[index]!.date, round.date));
+  const tightGapCount = gaps.filter((gap) => gap < 7).length;
+  const tightestGap = gaps.length > 0 ? Math.min(...gaps) : null;
+  const weekdayRoundCount = rounds.filter((round) => isWeekday(round.date)).length;
 
   function chooseTeamCount(count: 10 | 12 | 14) {
     if (count === 10) onPresetChange(preset === "ten-split" ? "ten-split" : "ten-triple");
@@ -138,7 +156,7 @@ export default function PlaygroundOverview({
             </div>
           )}
         </div>
-        <button type="button" className={styles.rerunButton} onClick={onRerun}>Keyra aftur</button>
+        <button type="button" className={styles.rerunButton} onClick={onRerun}>Endurkeyra</button>
       </div>
 
       <div className={styles.summaryLine}>
@@ -150,14 +168,26 @@ export default function PlaygroundOverview({
         <small>keyrsla {rerunCount}</small>
       </div>
 
+      <div className={`${styles.impactLine} ${shortfall > 0 ? styles.impactBad : ""}`}>
+        <strong>{shortfall > 0 ? `${foundRounds}/${totalRounds} komast inn` : `${totalRounds}/${totalRounds} umferðir halda sér`}</strong>
+        {seasonChange !== 0 && <span>{seasonChange < 0 ? `tímabilið stytt um ${Math.abs(seasonChange)} daga` : `tímabilið lengt um ${seasonChange} daga`}</span>}
+        <span>{tightGapCount} bil undir viku</span>
+        <span>{weekdayRoundCount} umferðir utan helgar</span>
+        {tightestGap !== null && <span>minnst {Math.max(0, tightestGap - 1)} heilir hvíldardagar</span>}
+      </div>
+
       <div className={styles.boardHead}>
-        <div><h2>Leikjadagatal</h2><p>Grænu merkin eru prufuplanið. Gráa línan er raunveruleg niðurröðun 2026 færð yfir á sama almanaksár til samanburðar.</p></div>
+        <div>
+          <h2>Fiktaðu í tímabilinu</h2>
+          <p>Styttu lokadaginn í stillingunum fyrir ofan. Umferðirnar færa sig sjálfar. Gulir hringir sýna hvar dagskráin þéttist.</p>
+        </div>
         <div className={styles.legend} aria-label="Skýringar">
           <span><i className={styles.leagueDot} />Prufuplan</span>
-          <span><i className={styles.baselineDot} />2026 viðmið</span>
-          <span><i className={styles.uefaDot} />UEFA sniðmát</span>
-          <span><i className={styles.fifaDot} />FIFA staðfest</span>
-          <span><i className={styles.cupDot} />Bikar sniðmát</span>
+          <span><i className={styles.tightDot} />Þétt bil</span>
+          <span><i className={styles.baselineDot} />2026</span>
+          <span><i className={styles.uefaDot} />UEFA</span>
+          <span><i className={styles.fifaDot} />FIFA</span>
+          <span><i className={styles.cupDot} />Bikar</span>
         </div>
       </div>
 
@@ -165,31 +195,52 @@ export default function PlaygroundOverview({
         <div className={styles.months}>{months.map((month) => <span key={month.id} style={{ left: `${month.left}%`, width: `${month.width}%` }}>{month.label}</span>)}</div>
 
         <div className={styles.lane}>
-          <span className={styles.laneLabel}>Prufa</span>
-          <div className={styles.track}>
+          <span className={styles.laneLabel}>PRUFA</span>
+          <div className={`${styles.track} ${styles.roundTrack}`}>
             {months.slice(1).map((month) => <i key={month.id} className={styles.monthLine} style={{ left: `${month.left}%` }} />)}
-            {rounds.map((round) => (
-              <button type="button" key={round.number} title={`${round.label} · umferð ${round.number}`} className={`${styles.roundButton} ${round.number === selectedRound ? styles.roundSelected : ""}`} style={{ left: `${position(round.date, seasonStart, seasonEnd)}%` }} onClick={() => onSelectRound(round.number)}>R{round.number}</button>
-            ))}
+            {rounds.map((round, index) => {
+              const beforeGap = index > 0 ? daysBetween(rounds[index - 1]!.date, round.date) : null;
+              const afterGap = index < rounds.length - 1 ? daysBetween(round.date, rounds[index + 1]!.date) : null;
+              const tight = (beforeGap !== null && beforeGap < 7) || (afterGap !== null && afterGap < 7);
+              const className = [
+                styles.roundButton,
+                round.number === selectedRound ? styles.roundSelected : "",
+                tight ? styles.roundTight : "",
+                isWeekday(round.date) ? styles.roundWeekday : "",
+              ].filter(Boolean).join(" ");
+
+              return (
+                <button
+                  type="button"
+                  key={round.number}
+                  title={`${round.label} · umferð ${round.number}${tight ? " · þétt dagskrá" : ""}`}
+                  className={className}
+                  style={{ left: `${position(round.date, boardStart, boardEnd)}%` }}
+                  onClick={() => onSelectRound(round.number)}
+                >
+                  {round.number}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         <div className={`${styles.lane} ${styles.baselineLane}`}>
           <span className={styles.laneLabel}>2026</span>
           <div className={styles.track}>
-            <span className={styles.baselineBar} style={{ left: `${position(baselineStart, seasonStart, seasonEnd)}%`, width: `${width(baselineStart, baselineEnd, seasonStart, seasonEnd)}%` }} />
-            <span className={styles.baselineMarker} style={{ left: `${position(baselineStart, seasonStart, seasonEnd)}%` }} title="2026 hófst 10. apríl">R1</span>
-            <span className={styles.baselineMarker} style={{ left: `${position(baselineRegularEnd, seasonStart, seasonEnd)}%` }} title="22. umferð lauk 5.–6. september">R22</span>
+            <span className={styles.baselineBar} style={{ left: `${position(baselineStart, boardStart, boardEnd)}%`, width: `${width(baselineStart, baselineEnd, boardStart, boardEnd)}%` }} />
+            <span className={styles.baselineMarker} style={{ left: `${position(baselineStart, boardStart, boardEnd)}%` }} title="2026 hófst 10. apríl">1</span>
+            <span className={styles.baselineMarker} style={{ left: `${position(baselineRegularEnd, boardStart, boardEnd)}%` }} title="22. umferð lauk 5.–6. september">22</span>
             {besta2026Baseline.splitWindows.map((window) => {
               const value = baselineDateIn2027(window.start);
-              return <span key={window.round} className={styles.baselineMarker} style={{ left: `${position(value, seasonStart, seasonEnd)}%` }} title={`${window.label} · ${window.start.slice(5)}–${window.end.slice(5)}`}>S{window.round - 22}</span>;
+              return <span key={window.round} className={styles.baselineMarker} style={{ left: `${position(value, boardStart, boardEnd)}%` }} title={`${window.label} · ${window.start.slice(5)}–${window.end.slice(5)}`}>{window.round}</span>;
             })}
           </div>
         </div>
 
-        <div className={styles.lane}><span className={styles.laneLabel}>UEFA</span><div className={styles.track}>{uefaBlocks.map((block) => <span key={block.id} className={`${styles.window} ${styles.uefaWindow}`} style={{ left: `${position(block.start, seasonStart, seasonEnd)}%`, width: `${width(block.start, block.end, seasonStart, seasonEnd)}%` }} title={`${block.label} · ${block.confidence === "official" ? "staðfest" : "sniðmát"}`} />)}</div></div>
-        <div className={styles.lane}><span className={styles.laneLabel}>FIFA</span><div className={styles.track}>{fifaBlocks.map((block) => <span key={block.id} className={`${styles.window} ${styles.fifaWindow}`} style={{ left: `${position(block.start, seasonStart, seasonEnd)}%`, width: `${width(block.start, block.end, seasonStart, seasonEnd)}%` }} title={`${block.label} · staðfestur gluggi`} />)}</div></div>
-        <div className={styles.lane}><span className={styles.laneLabel}>Bikar</span><div className={styles.track}>{cupEvents.map((event) => <span key={event.id} className={styles.cupMarker} style={{ left: `${position(event.date, seasonStart, seasonEnd)}%` }} title={`${event.label} · sniðmát`} />)}</div></div>
+        <div className={styles.lane}><span className={styles.laneLabel}>UEFA</span><div className={styles.track}>{uefaBlocks.map((block) => <span key={block.id} className={`${styles.window} ${styles.uefaWindow}`} style={{ left: `${position(block.start, boardStart, boardEnd)}%`, width: `${width(block.start, block.end, boardStart, boardEnd)}%` }} title={`${block.label} · ${block.confidence === "official" ? "staðfest" : "sniðmát"}`} />)}</div></div>
+        <div className={styles.lane}><span className={styles.laneLabel}>FIFA</span><div className={styles.track}>{fifaBlocks.map((block) => <span key={block.id} className={`${styles.window} ${styles.fifaWindow}`} style={{ left: `${position(block.start, boardStart, boardEnd)}%`, width: `${width(block.start, block.end, boardStart, boardEnd)}%` }} title={`${block.label} · staðfestur gluggi`} />)}</div></div>
+        <div className={styles.lane}><span className={styles.laneLabel}>BIKAR</span><div className={styles.track}>{cupEvents.map((event) => <span key={event.id} className={styles.cupMarker} style={{ left: `${position(event.date, boardStart, boardEnd)}%` }} title={`${event.label} · sniðmát`} />)}</div></div>
       </div>
 
       <div className={styles.compareLine}>
