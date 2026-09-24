@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import type { CupDepth } from "@/data/mjolkurbikar-template-2026";
 import type { ScheduleRepairSuggestion } from "@/lib/schedule-repair";
 import type { TeamLoadSummary } from "@/lib/team-load";
@@ -6,14 +8,19 @@ import type { Team } from "@/lib/types";
 import styles from "./TeamLoadPanel.module.css";
 
 function shortDate(value: string) {
-  return new Intl.DateTimeFormat("is-IS", { day: "numeric", month: "short", weekday: "short" }).format(
+  return new Intl.DateTimeFormat("is-IS", { day: "numeric", month: "short" }).format(
     new Date(`${value}T12:00:00Z`),
   );
 }
 
-function restLabel(days: number) {
-  if (days === 1) return "1 heill dagur";
-  return `${days} heilir dagar`;
+function dayDate(value: string) {
+  return new Intl.DateTimeFormat("is-IS", { weekday: "short", day: "numeric" })
+    .format(new Date(`${value}T12:00:00Z`))
+    .replace(".", "");
+}
+
+function riskCount(summary: TeamLoadSummary) {
+  return summary.belowMinimumCount + summary.scenarioRiskCount;
 }
 
 export default function TeamLoadPanel({
@@ -41,39 +48,31 @@ export default function TeamLoadPanel({
   appliedRepairCount: number;
   onResetRepairs: () => void;
 }) {
+  const [previewRepair, setPreviewRepair] = useState(false);
   const selectedTeam = teams.find((team) => team.id === selectedTeamId) ?? teams[0];
-  const opponent = repairSuggestion
-    ? teams.find((team) => team.id === repairSuggestion.opponentId)
-    : undefined;
-  const hasRisk = summary.belowMinimumCount + summary.scenarioRiskCount > 0;
+  const opponent = repairSuggestion ? teams.find((team) => team.id === repairSuggestion.opponentId) : undefined;
+  const hasRisk = riskCount(summary) > 0 || summary.threeInEightCount > 0;
+
+  useEffect(() => setPreviewRepair(false), [selectedTeamId, repairSuggestion?.fixtureId, appliedRepairCount]);
 
   return (
-    <div className={`panel ${styles.panel}`}>
-      <div className={styles.head}>
+    <section className={styles.shell} aria-label="Álag og lagfæring dagskrár">
+      <div className={styles.topRow}>
         <div>
-          <div className="eyebrow">Álag á lið</div>
+          <div className={styles.kicker}>Laga dagskrá</div>
           <h2>{selectedTeam?.name ?? "Veldu lið"}</h2>
+          <p>Skoðaðu eitt lið í einu. Hermirinn leggur aðeins til færslu sem býr ekki til nýtt vandamál hjá mótherjanum.</p>
         </div>
-        <div className={styles.headControls}>
+        <div className={styles.selectors}>
           <label>
             <span>Lið</span>
-            <select
-              className={styles.select}
-              value={selectedTeam?.id ?? ""}
-              onChange={(event) => onSelectTeam(event.target.value)}
-              aria-label="Veldu lið til að skoða álag"
-            >
+            <select value={selectedTeam?.id ?? ""} onChange={(event) => onSelectTeam(event.target.value)}>
               {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
             </select>
           </label>
           <label>
             <span>Bikarferð</span>
-            <select
-              className={styles.select}
-              value={cupDepth}
-              onChange={(event) => onCupDepthChange(event.target.value as CupDepth)}
-              aria-label="Veldu hversu langt liðið fer í Mjólkurbikar"
-            >
+            <select value={cupDepth} onChange={(event) => onCupDepthChange(event.target.value as CupDepth)}>
               <option value="none">Ekki með</option>
               <option value="round32">32-liða</option>
               <option value="round16">16-liða</option>
@@ -85,120 +84,72 @@ export default function TeamLoadPanel({
         </div>
       </div>
 
-      <div className={styles.summary}>
-        <div className={`${styles.metric} ${summary.belowMinimumCount > 0 ? styles.metricBad : ""}`}>
-          <strong>{summary.shortestFullRestDays ?? "–"}</strong>
-          <span>styst hvíld · heilir dagar milli leikja</span>
-        </div>
-        <div className={`${styles.metric} ${summary.scenarioRiskCount > 0 ? styles.metricWarn : ""}`}>
-          <strong>{summary.belowMinimumCount + summary.scenarioRiskCount}</strong>
-          <span>bil undir 2 heilum dögum · {summary.scenarioRiskCount} aðeins í sviðsmynd</span>
-        </div>
-        <div className={`${styles.metric} ${summary.threeInEightCount > 0 ? styles.metricWarn : ""}`}>
-          <strong>{summary.threeInEightCount}</strong>
-          <span>röð með 3 leikjum innan 8 daga</span>
-        </div>
-      </div>
-
-      <div className={`${styles.repair} ${repairSuggestion?.basis === "scenario" ? styles.repairScenario : ""}`}>
-        <div className={styles.repairCopy}>
-          <div className={styles.repairLabel}>
-            Laga dagskrá · {repairSuggestion?.basis === "scenario" ? "sviðsmynd" : "staðfestir leikdagar"}
-          </div>
+      <div className={`${styles.problemCard} ${hasRisk ? styles.problemActive : styles.problemClear}`}>
+        <div className={styles.problemCopy}>
           {repairSuggestion ? (
             <>
-              <strong>Færa umferð {repairSuggestion.round} um {Math.abs(repairSuggestion.shiftDays)} dag{Math.abs(repairSuggestion.shiftDays) === 1 ? "" : "a"}?</strong>
-              <p>
-                {shortDate(repairSuggestion.originalDate)} → {shortDate(repairSuggestion.proposedDate)} · gegn {opponent?.name ?? repairSuggestion.opponentId}.
-                Hvíldarvandamálið hjá {selectedTeam?.name} minnkar án þess að búa til nýtt álagsvandamál hjá mótherjanum.
-              </p>
-              <div className={styles.repairNumbers}>
-                <span>{repairSuggestion.beforeSelected.belowMinimumCount + repairSuggestion.beforeSelected.scenarioRiskCount} → {repairSuggestion.afterSelected.belowMinimumCount + repairSuggestion.afterSelected.scenarioRiskCount} þröng bil</span>
-                <span>{repairSuggestion.beforeSelected.threeInEightCount} → {repairSuggestion.afterSelected.threeInEightCount} × 3 leikir / 8 dagar</span>
-              </div>
+              <strong>⚠ {selectedTeam?.name} er í veseni</strong>
+              <span>
+                {repairSuggestion.basis === "scenario" ? "Sniðmátsálag" : "Leikjadagsálag"} í kringum umferð {repairSuggestion.round}.
+                {summary.shortestFullRestDays !== null ? ` Stysta hvíld er ${summary.shortestFullRestDays} heilir dagar.` : ""}
+              </span>
             </>
           ) : hasRisk ? (
             <>
-              <strong>Engin einföld örugg færsla fannst.</strong>
-              <p>Vélin prófaði næstu daga en fann ekki færslu sem lagar valda liðið án þess að auka álag hjá mótherjanum eða fara inn í lokaðan glugga.</p>
+              <strong>⚠ Þétt dagskrá, en engin einföld örugg færsla fannst</strong>
+              <span>Prófaðu annað lið, styttri bikarferð eða breyttan tímabilsglugga.</span>
             </>
           ) : (
             <>
-              <strong>Engin bein hvíldarvilla til að laga.</strong>
-              <p>Prófaðu Evrópuleið eða lengri bikarferð og sjáðu hvort 2026 sniðmátið þrengi að dagskránni.</p>
+              <strong>✓ Engin bein hvíldarvilla hjá {selectedTeam?.name}</strong>
+              <span>Prófaðu Evrópuleið eða lengri bikarferð til að stress-prófa dagskrána.</span>
             </>
           )}
         </div>
-        <div className={styles.repairActions}>
-          {repairSuggestion && (
-            <button type="button" className={styles.primaryButton} onClick={() => onApplyRepair(repairSuggestion)}>
-              Nota tillögu
-            </button>
-          )}
-          {appliedRepairCount > 0 && (
-            <button type="button" className={styles.secondaryButton} onClick={onResetRepairs}>
-              Endurstilla færslur ({appliedRepairCount})
-            </button>
-          )}
-        </div>
+
+        {repairSuggestion && !previewRepair && (
+          <button type="button" className={styles.tryButton} onClick={() => setPreviewRepair(true)}>Prófa annan leikdag</button>
+        )}
       </div>
 
-      {summary.events.length === 0 ? (
-        <p className={styles.empty}>Engir staðsettir leikir fundust fyrir þetta lið í valda glugganum.</p>
-      ) : (
-        <div className={styles.strip} aria-label={`Leikjaálag ${selectedTeam?.name ?? "liðs"}`}>
-          {summary.events.map((event, index) => {
-            const gap = index > 0 ? summary.gaps[index - 1] : undefined;
-            const eventClass = event.kind === "uefa-scenario"
-              ? styles.eventScenario
-              : event.kind === "uefa-official"
-                ? styles.eventOfficial
-                : event.kind === "cup-scenario"
-                  ? styles.eventCup
-                  : "";
-            const badgeClass = event.kind === "uefa-scenario"
-              ? styles.badgeScenario
-              : event.kind === "uefa-official"
-                ? styles.badgeUefa
-                : event.kind === "cup-scenario"
-                  ? styles.badgeCup
-                  : "";
-            const badge = event.kind === "besta"
-              ? "Besta"
-              : event.kind === "uefa-official"
-                ? "UEFA"
-                : event.kind === "cup-scenario"
-                  ? "Bikar ?"
-                  : "UEFA ?";
-
-            return (
-              <div className={styles.eventWrap} key={event.id}>
-                {gap && (
-                  <div className={`${styles.gap} ${gap.belowKsiMinimum ? styles.gapBad : gap.scenarioOnly ? styles.gapScenario : ""}`}>
-                    {restLabel(gap.fullRestDays)}
-                    {gap.belowKsiMinimum ? <><br />undir viðmiði</> : gap.scenarioOnly ? <><br />sviðsmynd</> : null}
-                  </div>
-                )}
-                <div className={`${styles.event} ${eventClass}`}>
-                  <div className={styles.eventTop}>
-                    <span className={styles.date}>{shortDate(event.date)}</span>
-                    <span className={`${styles.badge} ${badgeClass}`}>{badge}</span>
-                  </div>
-                  <strong>{event.label}</strong>
-                  <p>{event.detail}</p>
-                </div>
-              </div>
-            );
-          })}
+      {repairSuggestion && previewRepair && (
+        <div className={styles.repairPreview}>
+          <div className={styles.moveLine}>
+            <span>{dayDate(repairSuggestion.originalDate)}</span>
+            <b>→</b>
+            <span>{dayDate(repairSuggestion.proposedDate)}</span>
+            <small>gegn {opponent?.name ?? repairSuggestion.opponentId}</small>
+          </div>
+          <div className={styles.gains}>
+            <span>✓ {riskCount(repairSuggestion.beforeSelected) > riskCount(repairSuggestion.afterSelected) ? "færri þröng bil hjá valda liðinu" : "álagið minnkar"}</span>
+            <span>✓ enginn nýr árekstur hjá {opponent?.name ?? "mótherjanum"}</span>
+            <span>✓ helst utan lokaðra glugga</span>
+          </div>
+          <div className={styles.previewActions}>
+            <button type="button" className={styles.primaryButton} onClick={() => { onApplyRepair(repairSuggestion); setPreviewRepair(false); }}>Nota þetta</button>
+            <button type="button" className={styles.textButton} onClick={() => setPreviewRepair(false)}>Hætta við</button>
+          </div>
+          <small className={styles.basisNote}>
+            {repairSuggestion.basis === "scenario"
+              ? "Þessi tillaga byggir á hermisniðmáti, ekki staðfestu 2027 UEFA/Mjólkurbikardagatali."
+              : `Færsla ${shortDate(repairSuggestion.originalDate)} → ${shortDate(repairSuggestion.proposedDate)}.`}
+          </small>
         </div>
       )}
 
-      <div className={styles.notes}>
-        <span><b>KSÍ 15.5:</b> gildandi 2026-regla gerir almennt ráð fyrir minnst 2 heilum dögum milli kappleikja; mótanefnd getur stytt ef nauðsyn krefur.</span>
-        <a href="https://www.ksi.is/api/download/media/ec1f1lv1/reglugerd-ksi-um-knattspyrnumo-t-janu-ar-2026.pdf#page=8" target="_blank" rel="noreferrer">Sjá reglugerð ↗</a>
-        {splitIsUnresolved && <span>Split-leikir eru ekki taldir hér fyrr en mótherjar/bye liggja fyrir.</span>}
-        <span>Gul UEFA- og bikarspjöld eru 2026 sniðmát færð yfir á 2027, ekki staðfest 2027 dagatal.</span>
+      <div className={styles.eventLine}>
+        {summary.events.map((event) => (
+          <span key={event.id} className={`${styles.event} ${styles[event.kind.replace("-", "") as keyof typeof styles] ?? ""}`} title={event.detail}>
+            <b>{shortDate(event.date)}</b>
+            <small>{event.kind === "besta" ? "Besta" : event.kind === "cup-scenario" ? "Bikar ?" : event.kind === "uefa-official" ? "UEFA" : "UEFA ?"}</small>
+          </span>
+        ))}
       </div>
-    </div>
+
+      <div className={styles.footerLine}>
+        <span>{splitIsUnresolved ? "Split-mótherjar eru ekki reiknaðir fyrr en staða liggur fyrir." : "Hvíld er reiknuð milli staðsettra leikja."}</span>
+        {appliedRepairCount > 0 && <button type="button" onClick={onResetRepairs}>Endurstilla færslur ({appliedRepairCount})</button>}
+      </div>
+    </section>
   );
 }
