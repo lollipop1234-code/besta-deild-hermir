@@ -8,6 +8,7 @@ export const calendar2026: CalendarBlock[] = [
     end: "2026-03-31",
     kind: "fifa",
     hard: true,
+    confidence: "official",
     note: "FIFA international match window, allt að 2 landsleikir.",
   },
   {
@@ -17,6 +18,7 @@ export const calendar2026: CalendarBlock[] = [
     end: "2026-06-09",
     kind: "fifa",
     hard: true,
+    confidence: "official",
     note: "FIFA international match window, allt að 2 landsleikir.",
   },
   {
@@ -26,6 +28,7 @@ export const calendar2026: CalendarBlock[] = [
     end: "2026-07-19",
     kind: "info",
     hard: false,
+    confidence: "official",
     note: "HM er ekki sjálfkrafa lokun á Bestu deildina, en leikmannalosun getur haft áhrif.",
   },
   {
@@ -35,7 +38,8 @@ export const calendar2026: CalendarBlock[] = [
     end: "2026-08-27",
     kind: "uefa",
     hard: false,
-    note: "UEFA-leikdagar eru bindandi fyrir þau íslensku lið sem taka þátt. Tímabilið er því viðkvæmt fyrir færslum.",
+    confidence: "official",
+    note: "UEFA-leikdagar eru bindandi fyrir þau íslensku lið sem taka þátt.",
   },
   {
     id: "fifa-autumn",
@@ -44,6 +48,7 @@ export const calendar2026: CalendarBlock[] = [
     end: "2026-10-06",
     kind: "fifa",
     hard: true,
+    confidence: "official",
     note: "16 daga FIFA-gluggi, allt að 4 landsleikir.",
   },
   {
@@ -53,6 +58,7 @@ export const calendar2026: CalendarBlock[] = [
     end: "2026-11-17",
     kind: "fifa",
     hard: true,
+    confidence: "official",
     note: "FIFA international match window, allt að 2 landsleikir.",
   },
 ];
