@@ -1,1 +1,0 @@
-Ready for 2027 follow-up PR.
