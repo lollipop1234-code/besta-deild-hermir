@@ -1,0 +1,580 @@
+.game {
+  display: grid;
+  gap: 20px;
+}
+
+.gameTop {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.kicker {
+  color: #7f9185;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.gameTop h1 {
+  margin: 6px 0 5px;
+  color: #f1f5f0;
+  font-size: clamp(32px, 5vw, 60px);
+  line-height: .94;
+  letter-spacing: -.055em;
+}
+
+.gameTop p {
+  margin: 0;
+  color: #9ca9a0;
+  font-size: 14px;
+}
+
+.utilityActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.utilityActions button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid #2c3a31;
+  border-radius: 7px;
+  background: #121c16;
+  color: #aebbb2;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.utilityActions button:hover,
+.utilityActions .utilityActive {
+  border-color: #667c6d;
+  color: #edf4ef;
+}
+
+.formatPick {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 12px 18px;
+  padding: 14px 0 18px;
+  border-top: 1px solid #27342c;
+  border-bottom: 1px solid #27342c;
+}
+
+.formatPick > span {
+  color: #849489;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.teamButtons {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.teamButtons button {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border: 1px solid #34443a;
+  border-radius: 50%;
+  background: #111a15;
+  color: #75867b;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #0a100c;
+  transform: translateY(0);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.teamButtons button:hover {
+  transform: translateY(-2px);
+  border-color: #6d8d78;
+}
+
+.teamButtons button:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #0a100c;
+}
+
+.teamButtons b {
+  display: block;
+  margin-bottom: -5px;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.teamButtons small {
+  color: #718078;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.teamButtons .teamActive {
+  border-color: #9ee36f;
+  background: #1c3825;
+  color: #f2ffe9;
+  box-shadow: 0 5px 0 #0d1f13, 0 0 0 2px rgba(158, 227, 111, .08);
+}
+
+.teamButtons .teamActive small { color: #b9dca8; }
+
+.tenMode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tenMode button {
+  min-height: 32px;
+  padding: 0 9px;
+  border: 1px solid #314036;
+  border-radius: 6px;
+  background: transparent;
+  color: #7f9185;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.tenMode .modeActive {
+  border-color: #9ee36f;
+  color: #e9f8e3;
+}
+
+.formatFact {
+  justify-self: end;
+  color: #7c8a81;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.boardFrame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #314037;
+  border-radius: 14px;
+  background: #121b16;
+  box-shadow: 0 18px 50px rgba(0,0,0,.22);
+}
+
+.boardHeader {
+  display: grid;
+  grid-template-columns: minmax(260px, .9fr) minmax(0, 1.4fr);
+  gap: 24px;
+  align-items: center;
+  padding: 17px 20px;
+  border-bottom: 1px solid #2b3930;
+}
+
+.gameMessage {
+  display: grid;
+  gap: 3px;
+  padding-left: 12px;
+  border-left: 3px solid #6b7b70;
+}
+
+.gameMessage strong {
+  color: #eff5f0;
+  font-size: 14px;
+}
+
+.gameMessage span {
+  color: #839188;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.gameMessage.calm { border-left-color: #76b979; }
+.gameMessage.warm { border-left-color: #c4b150; }
+.gameMessage.hot { border-left-color: #e4934d; }
+.gameMessage.danger { border-left-color: #db665f; }
+
+.boardStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.boardStats b,
+.boardStats span {
+  display: block;
+}
+
+.boardStats b {
+  color: #dfe9e2;
+  font-size: 16px;
+}
+
+.boardStats span {
+  margin-top: 1px;
+  color: #6f8176;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.monthLine {
+  position: relative;
+  height: 34px;
+  margin: 0 32px 0 100px;
+  border-bottom: 1px solid #223029;
+}
+
+.monthLine span {
+  position: absolute;
+  top: 10px;
+  transform: translateX(-50%);
+  color: #56675d;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .09em;
+}
+
+.worldLane,
+.seasonLane,
+.snapshotLane,
+.ghostLane {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.worldLane { min-height: 46px; }
+.seasonLane { min-height: 88px; }
+.snapshotLane,
+.ghostLane { min-height: 38px; border-top: 1px solid #1e2b24; }
+
+.worldLabel {
+  color: #607269;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.worldTrack,
+.seasonTrack,
+.snapshotTrack,
+.ghostTrack {
+  position: relative;
+}
+
+.worldTrack { height: 28px; }
+.seasonTrack { height: 70px; }
+.snapshotTrack,
+.ghostTrack { height: 24px; }
+
+.worldBlock {
+  position: absolute;
+  top: 8px;
+  min-width: 4px;
+  height: 12px;
+  border-radius: 2px;
+  opacity: .9;
+}
+
+.worldBlock em {
+  position: absolute;
+  top: -11px;
+  left: 0;
+  color: inherit;
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.uefa {
+  background: #b99b3e;
+  color: #e3cc77;
+}
+
+.fifa {
+  background: #a94c48;
+  color: #dd8d88;
+}
+
+.cupPin {
+  position: absolute;
+  top: 4px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  transform: translateX(-50%);
+  border: 1px solid #5078a2;
+  border-radius: 50%;
+  background: #17283a;
+  color: #91bce6;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.seasonRail,
+.snapshotRail,
+.ghostRail,
+.activeWindow {
+  position: absolute;
+  border-radius: 99px;
+}
+
+.seasonRail {
+  top: 34px;
+  height: 4px;
+  background: #477c51;
+}
+
+.roundPuck {
+  position: absolute;
+  top: 17px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  transform: translateX(-50%);
+  border: 1px solid #4e6756;
+  border-radius: 50%;
+  background: #1c3023;
+  color: #dce8df;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #0d1510;
+  font-size: 10px;
+  font-weight: 900;
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+.roundPuck:hover {
+  z-index: 4;
+  transform: translateX(-50%) translateY(-3px) scale(1.07);
+}
+
+.roundPuck:active {
+  box-shadow: 0 1px 0 #0d1510;
+  transform: translateX(-50%) translateY(2px);
+}
+
+.roundSelected {
+  z-index: 5;
+  border-color: #bff28c;
+  background: #315c38;
+  color: #fff;
+  box-shadow: 0 5px 0 #122318, 0 0 0 4px rgba(191,242,140,.12);
+}
+
+.roundDense {
+  border-color: #c8a446;
+  background: #4c421d;
+  color: #ffecaa;
+}
+
+.roundWeekday::after {
+  content: "";
+  position: absolute;
+  bottom: -11px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #d5a954;
+}
+
+.roundPlayed {
+  opacity: .34;
+  box-shadow: none;
+}
+
+.snapshotRail {
+  top: 11px;
+  height: 2px;
+  background: #58a6ac;
+  opacity: .7;
+}
+
+.snapshotTrack i {
+  position: absolute;
+  top: 7px;
+  width: 8px;
+  height: 8px;
+  transform: translateX(-50%);
+  border: 1px solid #6fb7bc;
+  border-radius: 50%;
+  background: #152326;
+}
+
+.ghostRail {
+  top: 11px;
+  height: 2px;
+  background: #5e675f;
+}
+
+.ghostTrack i {
+  position: absolute;
+  top: 4px;
+  display: grid;
+  place-items: center;
+  min-width: 15px;
+  height: 15px;
+  transform: translateX(-50%);
+  border: 1px solid #4b5550;
+  border-radius: 50%;
+  background: #111814;
+  color: #66736b;
+  font-size: 6px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.seasonHandles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: end;
+  padding: 18px 20px 13px 110px;
+  border-top: 1px solid #26332b;
+}
+
+.handleTrack {
+  position: relative;
+  height: 48px;
+}
+
+.handleTrack::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 99px;
+  background: #27352d;
+}
+
+.activeWindow {
+  top: 15px;
+  height: 4px;
+  background: #8cc765;
+}
+
+.handleTrack input[type="range"] {
+  position: absolute;
+  inset: 4px 0 auto;
+  width: 100%;
+  height: 26px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.handleTrack input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+}
+
+.handleTrack input[type="range"]::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  margin-top: -9px;
+  appearance: none;
+  border: 3px solid #142019;
+  border-radius: 50%;
+  background: #bff28c;
+  box-shadow: 0 2px 0 #07100a;
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.handleTrack input[type="range"]::-moz-range-track { background: transparent; }
+.handleTrack input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 3px solid #142019;
+  border-radius: 50%;
+  background: #bff28c;
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.startLabel,
+.endLabel {
+  position: absolute;
+  top: 34px;
+  color: #89998f;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.startLabel { transform: translateX(-2px); }
+.endLabel { transform: translateX(-100%); }
+
+.seasonHandles > button {
+  margin-bottom: 3px;
+  padding: 0 0 3px;
+  border: 0;
+  border-bottom: 1px solid #5c6f63;
+  background: transparent;
+  color: #7d8d83;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.playBar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  border-top: 1px solid #26332b;
+  background: #0f1713;
+}
+
+.playButton {
+  min-height: 38px;
+  padding: 0 15px;
+  border: 1px solid #84c260;
+  border-radius: 6px;
+  background: #203b27;
+  color: #e7f7dc;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.playButton:disabled { opacity: .4; cursor: default; }
+
+.playBar span {
+  color: #6e7e74;
+  font-size: 10px;
+}
+
+@media (max-width: 900px) {
+  .gameTop { align-items: flex-start; flex-direction: column; }
+  .utilityActions { justify-content: flex-start; }
+  .formatPick { grid-template-columns: 1fr; }
+  .formatFact { justify-self: start; text-align: left; }
+  .boardHeader { grid-template-columns: 1fr; }
+  .boardStats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .boardFrame { overflow-x: auto; }
+  .monthLine,
+  .worldLane,
+  .seasonLane,
+  .snapshotLane,
+  .ghostLane,
+  .seasonHandles,
+  .playBar { min-width: 900px; }
+}
