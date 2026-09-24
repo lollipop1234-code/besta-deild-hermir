@@ -89,28 +89,28 @@ export function buildRoundDates(
   const endDay = dayNumber(seasonEnd);
   if (endDay < startDay) return { rounds: [], shortfall: required };
 
-  // KSÍ-reglan sem hermirinn notar fyrir liðsbundið álag gerir ráð fyrir tveimur
-  // heilum hvíldardögum. Því höldum við minnst þriggja almanaksdaga bili milli
-  // heilla umferða. Þegar tímabilið er stytt þéttir schedulerinn mótið í stað
-  // þess að halda laugardögum föstum og klippa síðustu umferðirnar af.
+  // Tvær heilar nætur/hvíldardagar þýða að heilar umferðir geta ekki legið
+  // nær hvor annarri en þrjá almanaksdaga. Innan þess ramma er öllu mótinu
+  // endurraðað þegar notandinn breytir upphafi eða lokum tímabilsins.
   const minGap = 3;
   const allowedDays = new Set<number>();
   for (let day = startDay; day <= endDay; day += 1) {
     if (!isBlocked(dateFromDay(day), blocks, avoidFifaWindows)) allowedDays.add(day);
   }
 
+  const targetCount = Math.min(required, maxFittableDates(startDay, endDay, minGap, allowedDays));
   const rounds: Round[] = [];
   let previousDay = startDay - minGap;
   const span = endDay - startDay;
 
-  for (let index = 0; index < required; index += 1) {
-    const remaining = required - index - 1;
+  for (let index = 0; index < targetCount; index += 1) {
+    const remaining = targetCount - index - 1;
     const earliest = Math.max(startDay, previousDay + minGap);
     if (earliest > endDay) break;
 
-    const ideal = required === 1
+    const ideal = targetCount === 1
       ? startDay
-      : startDay + (span * index) / (required - 1);
+      : startDay + (span * index) / (targetCount - 1);
 
     const candidates = Array.from(allowedDays)
       .filter((day) => day >= earliest && day <= endDay)
