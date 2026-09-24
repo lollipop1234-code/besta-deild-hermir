@@ -1,4 +1,5 @@
 export type Surface = "grass" | "artificial" | "unknown";
+export type EuropePath = "none" | "champions" | "conference";
 
 export type Team = {
   id: string;
@@ -6,7 +7,7 @@ export type Team = {
   venue: string;
   surface: Surface;
   floodlights: boolean | null;
-  europe: boolean;
+  europePath: EuropePath;
 };
 
 export type FormatPreset = "current-12-split" | "double-14";
@@ -24,7 +25,17 @@ export type CalendarBlock = {
   end: string;
   kind: "fifa" | "uefa" | "cup" | "info";
   hard: boolean;
+  confidence: "official" | "provisional";
   note: string;
+};
+
+export type EuropeWindow = {
+  id: string;
+  label: string;
+  start: string;
+  end: string;
+  phase: "qualifying" | "league-phase";
+  confidence: "official" | "provisional";
 };
 
 export type SimulatorSettings = {
