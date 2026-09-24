@@ -118,7 +118,7 @@ describe("calendar scheduling", () => {
     expect(normal.shortfall).toBe(0);
     expect(short.shortfall).toBe(0);
     expect(short.rounds).toHaveLength(27);
-    expect(short.rounds.at(-1)?.date).toBeLessThanOrEqual("2027-09-18");
+    expect((short.rounds.at(-1)?.date ?? "9999-12-31") <= "2027-09-18").toBe(true);
     expect(short.rounds[15]?.date).not.toBe(normal.rounds[15]?.date);
 
     const gaps = short.rounds.slice(1).map((round, index) => (
