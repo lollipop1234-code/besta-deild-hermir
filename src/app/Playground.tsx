@@ -20,13 +20,14 @@ import { applyGrassHomePreference, grassShoulderWarning, kickoffForHomeTeam } fr
 import type { EuropePath, FormatPreset, Surface, Team } from "@/lib/types";
 
 import PlaygroundOverview from "./PlaygroundOverview";
+import SplitRoundFixtures from "./SplitRoundFixtures";
 import TeamLoadPanel from "./TeamLoadPanel";
 import styles from "./PlaygroundShell.module.css";
 
 const formatCopy: Record<FormatPreset, string> = {
   "ten-triple": "10 lið · þreföld umferð",
   "ten-split": "10 lið · 5/5 split",
-  "current-12-split": "12 lið · split",
+  "current-12-split": "12 lið · 22 + 5 split",
   "double-14": "14 lið · tvöföld umferð",
 };
 
@@ -193,30 +194,19 @@ export default function Playground() {
     setRerunCount((count) => count + 1);
   }
 
-  const splitMessage = preset === "ten-split"
-    ? {
-      title: "Split ræðst af stöðunni eftir 18 leiki.",
-      text: "Fimm lið fara í hvorn hluta. Eitt lið fær frí í hverjum leikdagaglugga, þannig að mótherjar eru ekki falsaðir fyrirfram.",
-    }
-    : {
-      title: "Þessi umferð ræðst af stöðunni eftir 22 leiki.",
-      text: "Hermirinn býr ekki til mótherja fyrr en efri og neðri hluti liggja fyrir.",
-    };
-
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.brandmark}>M</div>
         <div className={styles.headerCopy}>
-          <div className={styles.eyebrow}>Mótamiðja · fixture playground</div>
-          <h1>Besta deildin, en þú ræður.</h1>
+          <div className={styles.eyebrow}>Mótamiðja · 2027 prufuplan</div>
+          <h1>Besta deild hermir</h1>
+          <p>Settu upp mótið, smelltu á umferð og sjáðu hvar dagatalið brotnar.</p>
         </div>
-        <span className={styles.year}>2027 hermir</span>
       </header>
 
       <div className={styles.notice}>
-        <b>Gögn:</b>
-        <span>FIFA 2027 er staðfest. UEFA og Mjólkurbikar 2026 eru merkt sniðmát fyrir 2027 þar til opinberar dagsetningar liggja fyrir.</span>
+        <b>2027:</b>
+        <span>FIFA-gluggar eru staðfestir. UEFA og Mjólkurbikar eru 2026 sniðmát þar til 2027 dagsetningar liggja fyrir.</span>
       </div>
 
       <section className={styles.shell}>
@@ -227,21 +217,13 @@ export default function Playground() {
             <span>→</span>
             <input type="date" value={seasonEnd} onChange={(event) => { setSeasonEnd(event.target.value); setFixtureDateOverrides({}); }} />
           </label>
-          <button type="button" className={`${styles.settingButton} ${avoidFifa ? styles.settingButtonOn : ""}`} onClick={() => { setAvoidFifa((value) => !value); setFixtureDateOverrides({}); }}>
-            FIFA: Forðast {avoidFifa ? "✓" : ""}
-          </button>
-          <button type="button" className={`${styles.settingButton} ${preferEvening ? styles.settingButtonOn : ""}`} onClick={() => setPreferEvening((value) => !value)}>
-            Kvöldleikir: {preferEvening ? "Já" : "Nei"}
-          </button>
-          <button type="button" className={`${styles.settingButton} ${showUefa ? styles.settingButtonOn : ""}`} onClick={() => { setShowUefa((value) => !value); setFixtureDateOverrides({}); }}>
-            UEFA sniðmát: {showUefa ? "Sýna" : "Fela"}
-          </button>
-          <button type="button" className={`${styles.settingButton} ${protectGrass ? styles.settingButtonOn : ""}`} onClick={() => { setProtectGrass((value) => !value); setFixtureDateOverrides({}); }}>
-            Gras: {protectGrass ? "Hlífa" : "Venjulegt"}
-          </button>
+          <button type="button" className={`${styles.settingButton} ${avoidFifa ? styles.settingButtonOn : ""}`} onClick={() => { setAvoidFifa((value) => !value); setFixtureDateOverrides({}); }}>FIFA {avoidFifa ? "✓" : ""}</button>
+          <button type="button" className={`${styles.settingButton} ${preferEvening ? styles.settingButtonOn : ""}`} onClick={() => setPreferEvening((value) => !value)}>Kvöld {preferEvening ? "✓" : ""}</button>
+          <button type="button" className={`${styles.settingButton} ${showUefa ? styles.settingButtonOn : ""}`} onClick={() => { setShowUefa((value) => !value); setFixtureDateOverrides({}); }}>UEFA {showUefa ? "✓" : ""}</button>
+          <button type="button" className={`${styles.settingButton} ${protectGrass ? styles.settingButtonOn : ""}`} onClick={() => { setProtectGrass((value) => !value); setFixtureDateOverrides({}); }}>Hlífa grasi {protectGrass ? "✓" : ""}</button>
 
           <details className={styles.moreSettings}>
-            <summary>Fleiri stillingar</summary>
+            <summary>Fleira</summary>
             <div className={styles.morePopover}>
               <label>
                 <span>Evrópa frá fyrra ári</span>
@@ -254,9 +236,7 @@ export default function Playground() {
             </div>
           </details>
 
-          <button type="button" className={styles.teamButton} onClick={() => setTeamsOpen(true)}>
-            ⚙ Lið og vellir · {unknownVenues > 0 ? `${unknownVenues} óstaðfest` : `${activeTeams.length} lið`}
-          </button>
+          <button type="button" className={styles.teamButton} onClick={() => setTeamsOpen(true)}>Lið og vellir {unknownVenues > 0 ? `(${unknownVenues} ?)` : ""}</button>
         </div>
 
         <PlaygroundOverview
@@ -280,8 +260,8 @@ export default function Playground() {
           <div className={styles.roundHeader}>
             <div>
               <div className={styles.eyebrow}>Valin umferð</div>
-              <h2>Umferð {selectedRound}</h2>
-              <p>{roundDate?.label ?? "Enginn leikdagur fundinn"} · {formatCopy[preset]}</p>
+              <h2>R{selectedRound} <span>{roundDate?.label ?? "enginn leikdagur"}</span></h2>
+              <p>{formatCopy[preset]}</p>
             </div>
             <select className={styles.roundSelect} value={selectedRound} onChange={(event) => setSelectedRound(Number(event.target.value))}>
               {Array.from({ length: metrics.rounds }, (_, index) => index + 1).map((number) => <option key={number} value={number}>Umferð {number}</option>)}
@@ -289,14 +269,14 @@ export default function Playground() {
           </div>
 
           <div className={styles.roundMeta}>
-            {round?.stage === "split" && <span className={styles.tag}>Lokahluti</span>}
-            {movedInRound > 0 && <span className={styles.tag}>{movedInRound} leik{movedInRound === 1 ? "ur" : "ir"} færður</span>}
+            {round?.stage === "split" && <span className={styles.tag}>split</span>}
+            {movedInRound > 0 && <span className={styles.tag}>{movedInRound} færðir</span>}
             {showUefa && uefaWindow && roundEuropeTeams.length > 0 && <span className={`${styles.tag} ${styles.warningTag}`}>UEFA-sniðmát · {roundEuropeTeams.map((team) => team.name).join(", ")}</span>}
             {nearbySpringEurope && springEuropeTeam && <span className={`${styles.tag} ${styles.warningTag}`}>UECL staðfest · {springEuropeTeam.name} · {shortDate(nearbySpringEurope.date)}</span>}
           </div>
 
           {round?.stage === "split" ? (
-            <div className={styles.splitBox}><strong>{splitMessage.title}</strong><span>{splitMessage.text}</span></div>
+            <SplitRoundFixtures preset={preset} roundNumber={round.number} />
           ) : (
             <div className={styles.fixtures}>
               {round?.pairings.map((pair) => {
@@ -381,7 +361,7 @@ export default function Playground() {
                 if (!profile) return null;
                 return <div className={styles.sourceRow} key={team.id}><b>{team.name}</b><span>{profile.label} · UEFA 2026 leikslot færð á sambærilega vikudaga 2027.</span></div>;
               })}
-              <div className={styles.sourceRow}><b>Mótareglur</b><span>Hvíldardagar og 3 leikir á 8 dögum eru metin í liðsbundnu álagi. Hermisstillingar eru ekki settar fram sem reglur KSÍ.</span></div>
+              <div className={styles.sourceRow}><b>Mótareglur</b><span>Hvíldardagar og 3 leikir á 8 dögum eru metin í liðsbundnu álagi. Split-leikir eru sýndir sem sætispláss þar til endanleg lið liggja fyrir.</span></div>
             </div>
           </div>
         </details>
@@ -389,7 +369,7 @@ export default function Playground() {
 
       <footer className={styles.footer}>
         <span>Tilraunaverkefni · ekki opinber leikjaskrá KSÍ</span>
-        <span>{championsTeams.length} meistaraleið · {conferenceTeams.length} Sambandsdeild · fixture overrides virkir: {Object.keys(fixtureDateOverrides).length}</span>
+        <span>{championsTeams.length} meistaraleið · {conferenceTeams.length} Sambandsdeild · færðir leikir: {Object.keys(fixtureDateOverrides).length}</span>
       </footer>
 
       {teamsOpen && (
